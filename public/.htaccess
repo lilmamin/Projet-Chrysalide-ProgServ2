@@ -1,0 +1,14 @@
+# public/.htaccess
+RewriteEngine On
+
+# Laisser passer les fichiers/dossiers réels
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# (Optionnel) Jolies URLs, par exemple :
+# /story/42 => /story.php?id=42
+# RewriteRule ^story/([0-9]+)$ story.php?id=$1 [L,QSA]
+
+# Sécurité défensive si jamais ces dossiers se retrouvent sous docroot
+RewriteRule ^(src|config|scripts|data)/ - [F,L]
