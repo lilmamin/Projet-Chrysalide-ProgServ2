@@ -10,7 +10,10 @@ class Story
     private string $summary;
     private bool $is_completed;
     private ?DateTime $published_at;
+    private ?DateTime $updated_at;
     private array $chapters = [];
+
+
 
     public function __construct(
         int $user_id,
@@ -18,6 +21,7 @@ class Story
         string $summary,
         bool $is_completed = false,
         ?DateTime $published_at = null,
+        ?DateTime $updated_at = null,
         ?int $id = null,
         array $chapters = []
     ) {
@@ -27,6 +31,7 @@ class Story
         $this->summary = $summary;
         $this->is_completed = $is_completed;
         $this->published_at = $published_at;
+        $this->updated_at = $updated_at;
         $this->chapters = $chapters;
     }
 
@@ -55,6 +60,12 @@ class Story
     {
         return $this->published_at;
     }
+
+    public function getUpdatedAt(): ?DateTime
+    {
+        return $this->updated_at;
+    }
+
     public function getChapters(): array
     {
         return $this->chapters;
@@ -87,6 +98,11 @@ class Story
     public function publish(): void
     {
         $this->published_at = new DateTime();
+    }
+
+    public function update(): void
+    {
+        $this->updated_at = new DateTime();
     }
 
     public function getInfo(): string

@@ -15,7 +15,6 @@ include __DIR__ . '/templates/header.php';
 
 <body>
 
-
     <main class="container">
         <header class="page-header">
             <h1>Découverte</h1>
