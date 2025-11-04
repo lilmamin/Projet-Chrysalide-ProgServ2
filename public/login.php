@@ -10,7 +10,7 @@ if (isset($_GET['logout'])) {
 
 $error = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (login_fake($_POST['email'] ?? '', $_POST['password'] ?? '')) {
+    if (login($_POST['email'] ?? '', $_POST['password'] ?? '')) {
         header('Location: /');
         exit;
     } else {

@@ -5,8 +5,8 @@ require_once __DIR__ . '/../src/auth.php';
 $msg = $err = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $role = in_array($_POST['role'] ?? 'reader', ['reader', 'author']) ? $_POST['role'] : 'reader';
-    if (register_fake($_POST['email'] ?? '', $_POST['password'] ?? '', $role)) {
-        $msg = "Compte créé (fake). Tu peux te connecter.";
+    if (register($_POST['email'] ?? '', $_POST['password'] ?? '', $role)) {
+        $msg = "Compte créé. Tu peux te connecter.";
     } else {
         $err = "Impossible de créer le compte.";
     }
