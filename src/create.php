@@ -1,5 +1,6 @@
 <?php
 const DATABASE_CONFIGURATION_FILE = __DIR__ . '/../src/config/database.ini';
+require_once __DIR__ . '/config/database.php';
 
 // Documentation : https://www.php.net/manual/fr/function.parse-ini-file.php
 $config = parse_ini_file(DATABASE_CONFIGURATION_FILE, true);
@@ -103,4 +104,3 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         exit();
     }
 }
-?>
