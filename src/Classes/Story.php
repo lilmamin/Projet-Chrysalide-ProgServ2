@@ -5,7 +5,7 @@ require_once __DIR__ . '/Chapter.php';
 class Story
 {
     private int $id;
-    private int $user_id;
+    private int $author_id;
     private string $title;
     private string $summary;
     private bool $is_completed;
@@ -16,7 +16,7 @@ class Story
 
 
     public function __construct(
-        int $user_id,
+        int $author_id,
         string $title,
         string $summary,
         bool $is_completed = false,
@@ -26,7 +26,7 @@ class Story
         array $chapters = []
     ) {
         $this->id = $id ?? 0;
-        $this->user_id = $user_id;
+        $this->author_id = $author_id;
         $this->title = $title;
         $this->summary = $summary;
         $this->is_completed = $is_completed;
@@ -42,7 +42,7 @@ class Story
     }
     public function getUserId(): int
     {
-        return $this->user_id;
+        return $this->author_id;
     }
     public function getTitle(): string
     {
@@ -60,6 +60,11 @@ class Story
     {
         return $this->published_at;
     }
+    public function getChapterCount(): int
+    {
+        return count($this->chapters);
+    }
+
 
     public function getUpdatedAt(): ?DateTime
     {
