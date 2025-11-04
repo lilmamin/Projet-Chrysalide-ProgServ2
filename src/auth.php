@@ -5,26 +5,48 @@ if (session_status() === PHP_SESSION_NONE)
 require_once __DIR__ . '/config/database.php';
 
 // Versions test en attendant la DB
-function login_fake(string $email, string $password): bool
+function login(string $email, string $password): bool
 {
-    // 2 comptes de test : author / reader
-    $fixtures = [
-        ['id' => 1, 'email' => 'author@test.dev', 'password' => 'secret', 'role' => 'author'],
-        ['id' => 2, 'email' => 'reader@test.dev', 'password' => 'secret', 'role' => 'reader'],
-    ];
-    foreach ($fixtures as $u) {
-        if ($u['email'] === $email && $u['password'] === $password) {
-            $_SESSION['user'] = ['id' => $u['id'], 'email' => $u['email'], 'role' => $u['role']];
-            return true;
-        }
+    global $pdo;
+
+    $stmt = $pdo->prepare("SELECT id, username, email, password_hash, role 
+                           FROM users WHERE email = :email LIMIT 1");
+    $stmt->execute(['email' => $email]);
+    $user = $stmt->fetch();
+
+    if ($user && password_verify($password, $user['password_hash'])) {
+        $_SESSION['user'] = [
+            'id'       => $user['id'],
+            'username' => $user['username'],
+            'email'    => $user['email'],
+            'role'     => $user['role']
+        ];
+        return true;
     }
     return false;
 }
-function register_fake(string $email, string $password, string $role = 'reader'): bool
+
+function register(string $username, string $email, string $password, string $role = 'reader'): bool
 {
-    // à brancher sur DB plus tard
-    return true;
+    global $pdo;
+
+    $sql = "INSERT INTO users (username, email, password_hash, role, created_at)
+            VALUES (:username, :email, :password_hash, :role, NOW())";
+
+    try {
+        $stmt = $pdo->prepare($sql);
+        return $stmt->execute([
+            'username'      => $username,
+            'email'         => $email,
+            'password_hash' => password_hash($password, PASSWORD_BCRYPT),
+            'role'          => $role
+        ]);
+    } catch (PDOException $e) {
+        // email déjà utilisé
+        return false;
+    }
 }
+
 function logout(): void
 {
     $_SESSION = [];
