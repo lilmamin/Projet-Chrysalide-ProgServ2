@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS stories (
     genre ENUM('romance','action','historical','fantasy','horror','other') NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NULL,
+    is_completed BOOLEAN,
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -29,12 +30,12 @@ CREATE TABLE IF NOT EXISTS stories (
 CREATE TABLE IF NOT EXISTS chapters (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     story_id INT UNSIGNED NOT NULL,
-    number INT UNSIGNED NOT NULL,
+    position INT UNSIGNED NOT NULL,
     title VARCHAR(255) NOT NULL,
     content LONGTEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (story_id) REFERENCES stories(id) ON DELETE CASCADE,
-    UNIQUE (story_id, number)
+    UNIQUE (story_id, position)
 ) ENGINE=InnoDB;
 
 -- TABLE LIKES
@@ -83,7 +84,7 @@ VALUES
 (3, 'Les Silences d’Aya', 'Chroniques d’une autrice en quête de sa voix dans un monde bruyant.', 'covers/aya.jpg', 'romance', NOW());
 
 -- SEEDS CHAPTERS
-INSERT INTO chapters (story_id, number, title, content, created_at)
+INSERT INTO chapters (story_id, position, title, content, created_at)
 VALUES
 (1, 1, 'Sous la première lune', 'Le ciel se fendit et révéla une lumière inconnue...', NOW()),
 (1, 2, 'Reflets d’argent', 'Les lunes dansaient au-dessus du lac, et tout bascula.', NOW()),
