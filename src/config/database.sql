@@ -99,4 +99,4 @@ VALUES
 -- SEEDS FOLLOWS
 INSERT INTO follows (follower_id, author_id, created_at)
 VALUES
-(2, 1
+(2, 1, NOW());
