@@ -16,18 +16,23 @@ require_once __DIR__ . '/../../src/config/app.php'; ?>
 <body>
     <header class="site-header">
         <nav class="nav">
-            <a class="brand" href="/"><?= t('site_name'); ?></a>
-            <a href="/discover.php"><?= t('discover'); ?></a>
-            <?php if (!empty($_SESSION['user'])): ?>
-                <?php if ($_SESSION['user']['role'] === 'author'): ?>
-                    <a href="/author/my-stories.php"><?= t('author_space'); ?></a>
-                <?php endif; ?>
-                <a href="/profile.php"><?= t('profile'); ?></a>
-                <a href="/login.php?logout=1"><?= t('logout'); ?></a>
-            <?php else: ?>
-                <a href="/login.php"><?= t('login'); ?></a>
-                <a href="/register.php"><?= t('register'); ?></a>
-            <?php endif; ?>
+            <header class="site-header">
+                <nav class="nav container">
+                    <a class="brand" href="#">
+                        <span class="logo-sq" aria-hidden="true">logoooo</span>
+                        <span class="brand-text">Chrysalide</span>
+                    </a>
+
+                    <div class="nav-actions">
+                        <a class="btn ghost" href="#">Se connecter</a>
+                        <a class="btn" href="#">S’inscrire</a>
+                    </div>
+                </nav>
+
+                <div class="notice">
+                    Vous êtes déconnecté·e ! Connectez-vous pour lire les œuvres !
+                </div>
+            </header>
             <span class="lang">
                 <a href="?lang=fr"><?= t('lang_fr'); ?></a> | <a href="?lang=en"><?= t('lang_en'); ?></a>
             </span>

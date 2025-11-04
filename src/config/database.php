@@ -1,103 +1,35 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+// src/config/database.php
+// Ce fichier est inclus par src/database.php et crée la variable $pdo
+
+$cfgPath = __DIR__ . '/database.ini';
+if (!is_file($cfgPath)) {
+    throw new RuntimeException("Fichier de config DB introuvable: $cfgPath");
 }
 
-/**
- * Connexion à la base de données
- * Assure que $pdo est disponible dans ce fichier
- */
-require_once __DIR__ . '/config/database.php';
-
-
-/**
- * Connexion d'un utilisateur
- * Retourne true si succès, false sinon
- */
-function login(string $email, string $password): bool
-{
-    global $pdo;
-
-    $stmt = $pdo->prepare("SELECT id, username, email, password_hash, role 
-                           FROM users 
-                           WHERE email = :email LIMIT 1");
-    $stmt->execute(['email' => $email]);
-    $user = $stmt->fetch();
-
-    if ($user && password_verify($password, $user['password_hash'])) {
-
-        $_SESSION['user'] = [
-            'id'       => $user['id'],
-            'username' => $user['username'],
-            'email'    => $user['email'],
-            'role'     => $user['role']
-        ];
-
-        return true;
-    }
-
-    return false;
+$cfgAll = parse_ini_file($cfgPath, true);
+if (!$cfgAll || empty($cfgAll['database'])) {
+    throw new RuntimeException("Section [database] manquante dans $cfgPath");
 }
 
+$db = $cfgAll['database'];
 
-/**
- * Inscription d'un nouveau user
- * Retourne true si succès, false sinon
- */
-function register(string $username, string $email, string $password, string $role = 'reader'): bool
-{
-    global $pdo;
+$dsn = sprintf(
+    'mysql:host=%s;port=%d;dbname=%s;charset=%s',
+    $db['host'] ?? '127.0.0.1',
+    (int) ($db['port'] ?? 3306),
+    $db['dbname'] ?? '',
+    $db['charset'] ?? 'utf8mb4'
+);
 
-    $sql = "INSERT INTO users (username, email, password_hash, role, created_at)
-            VALUES (:username, :email, :password_hash, :role, NOW())";
+$options = [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+];
 
-    try {
-        $stmt = $pdo->prepare($sql);
-        return $stmt->execute([
-            'username'      => $username,
-            'email'         => $email,
-            'password_hash' => password_hash($password, PASSWORD_BCRYPT),
-            'role'          => $role
-        ]);
-    } catch (PDOException $e) {
-        // Erreur type : email ou username déjà utilisé
-        return false;
-    }
-}
-
-
-/**
- * Déconnexion
- */
-function logout(): void
-{
-    if (session_status() === PHP_SESSION_NONE) session_start();
-    $_SESSION = [];
-    session_destroy();
-}
-
-
-/**
- * Bloque l'accès si user non connecté
- */
-function requireAuth(): void
-{
-    if (empty($_SESSION['user'])) {
-        header("Location: /login.php");
-        exit;
-    }
-}
-
-
-/**
- * Bloque l'accès si user non author
- */
-function requireAuthor(): void
-{
-    requireAuth();
-
-    if ($_SESSION['user']['role'] !== 'author') {
-        http_response_code(403);
-        exit("Accès refusé - Vous devez être auteur");
-    }
+try {
+    $pdo = new PDO($dsn, $db['user'] ?? '', $db['password'] ?? '', $options);
+} catch (PDOException $e) {
+    http_response_code(500);
+    exit('Erreur de connexion à la base de données.');
 }
