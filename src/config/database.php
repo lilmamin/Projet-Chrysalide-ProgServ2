@@ -31,5 +31,5 @@ try {
     $pdo = new PDO($dsn, $db['user'] ?? '', $db['password'] ?? '', $options);
 } catch (PDOException $e) {
     http_response_code(500);
-    exit('Erreur de connexion à la base de données.');
+    exit('Erreur de connexion à la base de données : ' . $e->getMessage());
 }
