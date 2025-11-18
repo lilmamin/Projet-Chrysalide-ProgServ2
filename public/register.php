@@ -5,7 +5,7 @@ require_once __DIR__ . '/../src/auth.php';
 $msg = $err = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $role = in_array($_POST['role'] ?? 'reader', ['reader', 'author']) ? $_POST['role'] : 'reader';
-    if (register($_POST['email'] ?? '', $_POST['password'] ?? '', $role)) {
+    if (register($_POST['username'] ?? '', $_POST['email'] ?? '', $_POST['password'] ?? '', $role)) {
         $msg = "Compte créé. Tu peux te connecter.";
     } else {
         $err = "Impossible de créer le compte.";
@@ -19,6 +19,7 @@ include __DIR__ . '/../templates/header.php'; ?>
 if ($err)
     echo "<p class='err'>" . htmlspecialchars($err) . "</p>"; ?>
 <form method="post" class="form">
+    <input name="username" type="username" required placeholder="username">
     <input name="email" type="email" required placeholder="email">
     <input name="password" type="password" required placeholder="mot de passe">
     <label><input type="radio" name="role" value="reader" checked> Lecteur·ice</label>
