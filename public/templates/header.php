@@ -20,8 +20,7 @@ $base = rtrim(BASE_PATH ?? '/', '/') . '/';
     <header class="site-header">
         <nav class="nav container">
             <a class="brand" href="<?= $base ?>">
-                <span class="logo-sq" aria-hidden="true">logoooo</span>
-                <span class="brand-text"><?= t('site_name'); ?></span>
+                <img src="/assets/logo_chrysalide.png">
             </a>
 
             <div class="nav-actions">
