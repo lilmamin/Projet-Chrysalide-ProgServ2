@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: /');
         exit;
     } else {
-        $error = "Email ou mot de passe invalide (essayez author@test.dev / secret).";
+        $error = "Email ou mot de passe invalide.";
     }
 }
 
@@ -25,6 +25,12 @@ include __DIR__ . '/../templates/header.php'; ?>
 <form method="post" class="form">
     <input name="username" type="username" required placeholder="username">
     <input name="email" type="email" required placeholder="email">
+    <label for="role-selection">Veuillez sélectionner un rôle:</label>
+    <select name="roles" id="role-selection">
+        <option value="">Rôles</option>
+        <option value="author">Auteur·ice</option>
+        <option value="reader">Lecteur</option>
+    </select>
     <input name="password" type="password" required placeholder="mot de passe">
     <button type="submit"><?= t('login'); ?></button>
 </form>
