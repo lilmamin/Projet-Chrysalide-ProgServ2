@@ -21,7 +21,7 @@ if ($err)
 <form method="post" class="form">
     <input name="username" type="username" required placeholder="username">
     <input name="email" type="email" required placeholder="email">
-    <input name="password" type="password" required placeholder="mot de passe">
+    <input name="password" type="password" required placeholder="password">
     <label><input type="radio" name="role" value="reader" checked> Lecteur·ice</label>
     <label><input type="radio" name="role" value="author"> Auteur·ice</label>
     <button type="submit"><?= t('register'); ?></button>

@@ -19,8 +19,8 @@ $base = rtrim(BASE_PATH ?? '/', '/') . '/';
 <body>
     <header class="site-header">
         <nav class="nav container">
-            <a class="brand" href="<?= $base ?>">
-                <img src="/public/assets/logo_chrysalide.png">
+            <a class="logo-sq" href="<?= $base ?>">
+                <img src="<?= $base ?>assets/logo_chrysalide.png" alt="Logo Chrysalide">
             </a>
 
             <div class="nav-actions">

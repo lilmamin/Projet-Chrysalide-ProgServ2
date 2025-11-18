@@ -4,7 +4,7 @@ if (session_status() === PHP_SESSION_NONE)
 
 require_once __DIR__ . '/config/database.php';
 
-// Versions test en attendant la DB
+
 function login(string $email, string $password): bool
 {
     global $pdo;
@@ -16,10 +16,10 @@ function login(string $email, string $password): bool
 
     if ($user && password_verify($password, $user['password_hash'])) {
         $_SESSION['user'] = [
-            'id'       => $user['id'],
+            'id' => $user['id'],
             'username' => $user['username'],
-            'email'    => $user['email'],
-            'role'     => $user['role']
+            'email' => $user['email'],
+            'role' => $user['role']
         ];
         return true;
     }
@@ -36,10 +36,10 @@ function register(string $username, string $email, string $password, string $rol
     try {
         $stmt = $pdo->prepare($sql);
         return $stmt->execute([
-            'username'      => $username,
-            'email'         => $email,
+            'username' => $username,
+            'email' => $email,
             'password_hash' => password_hash($password, PASSWORD_BCRYPT),
-            'role'          => $role
+            'role' => $role
         ]);
     } catch (PDOException $e) {
         // email déjà utilisé
