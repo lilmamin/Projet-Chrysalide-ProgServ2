@@ -1,5 +1,4 @@
 <?php
-// scripts/seed.php
 
 const DATABASE_CONFIGURATION_FILE = __DIR__ . '/../src/config/database.ini';
 
