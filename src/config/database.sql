@@ -1,6 +1,3 @@
--- DATABASE
-CREATE DATABASE IF NOT EXISTS chrysalide CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE chrysalide;
 
 -- TABLE USERS
 CREATE TABLE IF NOT EXISTS users (
