@@ -1,4 +1,3 @@
-
 -- TABLE USERS
 CREATE TABLE IF NOT EXISTS users (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -7,7 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     role ENUM('reader','author') NOT NULL DEFAULT 'reader',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- TABLE STORIES
 CREATE TABLE IF NOT EXISTS stories (
@@ -21,7 +20,7 @@ CREATE TABLE IF NOT EXISTS stories (
     updated_at DATETIME NULL,
     is_completed BOOLEAN,
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- TABLE CHAPTERS
 CREATE TABLE IF NOT EXISTS chapters (
@@ -33,7 +32,7 @@ CREATE TABLE IF NOT EXISTS chapters (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (story_id) REFERENCES stories(id) ON DELETE CASCADE,
     UNIQUE (story_id, position)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- TABLE LIKES
 CREATE TABLE IF NOT EXISTS likes (
@@ -43,7 +42,7 @@ CREATE TABLE IF NOT EXISTS likes (
     PRIMARY KEY (user_id, story_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (story_id) REFERENCES stories(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- TABLE FOLLOWS
 CREATE TABLE IF NOT EXISTS follows (
@@ -53,7 +52,7 @@ CREATE TABLE IF NOT EXISTS follows (
     PRIMARY KEY (follower_id, author_id),
     FOREIGN KEY (follower_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- TABLE LIBRARY
 CREATE TABLE IF NOT EXISTS library (
@@ -64,7 +63,7 @@ CREATE TABLE IF NOT EXISTS library (
     PRIMARY KEY (user_id, story_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (story_id) REFERENCES stories(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- SEEDS USERS
 INSERT INTO users (username, email, password_hash, role, created_at)

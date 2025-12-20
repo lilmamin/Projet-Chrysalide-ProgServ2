@@ -2,6 +2,6 @@
 host = "localhost"
 port = 3306
 database = "lh00kk_heig_chrysalide"
-username = "root"
-password = "root"
+username = "lh00kk_lilmam"
+password = "-123Chrysalide"
 charset=utf8mb4
