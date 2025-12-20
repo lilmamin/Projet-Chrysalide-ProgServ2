@@ -8,6 +8,7 @@
  */
 
 require_once __DIR__ . '/../src/Classes/Database.php';
+require_once __DIR__ . '/../src/config/app.php';
 
 // Vérification de l'authentification
 require_once __DIR__ . '/auth_check.php';

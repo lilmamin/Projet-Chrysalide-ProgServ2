@@ -11,6 +11,8 @@ require_once __DIR__ . '/../src/Classes/Database.php';
 // Vérification de l'authentification
 require_once __DIR__ . '/auth_check.php';
 
+require_once __DIR__ . '/../src/config/app.php';
+
 // Vérification du rôle : seuls les auteurs peuvent créer des histoires
 if ($_SESSION['role'] !== 'author') {
     // Redirection avec message d'erreur

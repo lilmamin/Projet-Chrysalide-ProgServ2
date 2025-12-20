@@ -10,6 +10,7 @@
 require_once __DIR__ . '/../src/Classes/Database.php';
 
 // Vérification de l'authentification
+require_once __DIR__ . '/../src/config/app.php';
 require_once __DIR__ . '/auth_check.php';
 
 // Vérification du rôle : seuls les auteurs peuvent supprimer des histoires

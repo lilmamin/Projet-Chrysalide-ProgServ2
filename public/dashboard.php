@@ -6,6 +6,8 @@
  * Affiche les informations de l'utilisateur connecté
  */
 
+require_once __DIR__ . '/../src/config/app.php';
+
 // Vérification de l'authentification
 require_once __DIR__ . '/auth_check.php';
 
@@ -141,13 +143,13 @@ require_once __DIR__ . '/auth_check.php';
             <h2>Actions disponibles</h2>
             <p style="margin: 20px 0;">
                 <?php if ($_SESSION['role'] === 'author'): ?>
-                    <a href="my_stories.php" class="btn">Mes histoires</a>
-                    <a href="create_story.php" class="btn">Écrire une histoire</a>
+                    <a href="<?= BASE_PATH ?>my_stories.php" class="btn">Mes histoires</a>
+                    <a href="<?= BASE_PATH ?>create_story.php" class="btn">Écrire une histoire</a>
                 <?php else: ?>
-                    <a href="stories.php" class="btn">Parcourir les histoires</a>
+                    <a href="<?= BASE_PATH ?>index.php" class="btn">Parcourir les histoires</a>
                 <?php endif; ?>
 
-                <a href="logout.php" class="btn btn-logout">Se déconnecter</a>
+                <a href="<?= BASE_PATH ?>logout.php" class="btn btn-logout">Se déconnecter</a>
             </p>
         </div>
 

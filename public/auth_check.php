@@ -4,7 +4,6 @@
  * 
  * Ce fichier doit être inclus en haut de chaque page protégée
  * Il vérifie si l'utilisateur est authentifié, sinon il redirige vers la page de connexion
- * 
  */
 
 // Démarrage de la session

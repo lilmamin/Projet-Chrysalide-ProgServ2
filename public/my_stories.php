@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Page "Mes histoires"
  * 
@@ -6,11 +7,12 @@
  * Permet d'accéder aux actions : modifier, supprimer, publier/dépublier
  * Page protégée - réservée aux utilisateurs avec le rôle "author"
  */
-
 require_once __DIR__ . '/../src/Classes/Database.php';
 
 // Vérification de l'authentification
 require_once __DIR__ . '/auth_check.php';
+
+require_once __DIR__ . '/../src/config/app.php';
 
 // Vérification du rôle : seuls les auteurs peuvent voir cette page
 if ($_SESSION['role'] !== 'author') {
@@ -252,7 +254,7 @@ try {
     <div class="container">
         <div class="header">
             <div>
-                <a href="dashboard.php" class="back-link">← Retour au tableau de bord</a>
+                <a href="<?= BASE_PATH ?>dashboard.php" class="back-link">← Retour au tableau de bord</a>
                 <h1 style="margin-top: 10px;">Mes histoires</h1>
             </div>
             <a href="create_story.php" class="btn">+ Nouvelle histoire</a>

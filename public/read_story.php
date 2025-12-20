@@ -8,6 +8,7 @@
  */
 
 require_once __DIR__ . '/../src/Classes/Database.php';
+require_once __DIR__ . '/../src/config/app.php';
 
 // Démarrage de la session pour vérifier si l'utilisateur est connecté (optionnel)
 if (session_status() === PHP_SESSION_NONE) {
@@ -223,7 +224,7 @@ $isAuthor = isset($_SESSION['user_id']) && $_SESSION['user_id'] == $story['autho
 
 <body>
     <div class="container">
-        <a href="index.php" class="back-link">← Retour aux histoires</a>
+        <a href="<?= BASE_PATH ?>/index.php" class="back-link">← Retour aux histoires</a>
 
         <div class="story-header">
             <h1 class="story-title">
