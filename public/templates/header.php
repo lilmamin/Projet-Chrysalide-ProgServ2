@@ -1,11 +1,21 @@
 <?php
-if (session_status() === PHP_SESSION_NONE)
+// Dans templates/header.php, avant le HTML
+if (session_status() === PHP_SESSION_NONE) {
     session_start();
-require_once __DIR__ . '/../../src/i18n.php';
-require_once __DIR__ . '/../../src/config/app.php';
-
-$base = rtrim(BASE_PATH ?? '/', '/') . '/';
+}
+$isLoggedIn = isset($_SESSION['user_id']);
 ?>
+
+<!-- Dans ton menu de navigation -->
+<?php if ($isLoggedIn): ?>
+    <a href="dashboard.php">Mon espace</a>
+    <span>Bonjour <?= htmlspecialchars($_SESSION['username']) ?></span>
+    <a href="logout.php">Déconnexion</a>
+<?php else: ?>
+    <a href="login.php">Connexion</a>
+    <a href="register.php">Inscription</a>
+<?php endif; ?>
+
 <!doctype html>
 <html lang="<?= htmlspecialchars($lang) ?>">
 
