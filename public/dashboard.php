@@ -6,164 +6,241 @@
  * Affiche les informations de l'utilisateur connecté
  */
 
-require_once __DIR__ . '/../src/config/app.php';
+$pageTitle = "Mon espace";
 
-// Vérification de l'authentification
+require_once __DIR__ . '/../src/config/app.php';
 require_once __DIR__ . '/auth_check.php';
 
-// À ce stade, l'utilisateur est forcément authentifié
-// Ses informations sont disponibles dans $_SESSION
+include __DIR__ . '/templates/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="fr">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accueil - Chrysalide</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+<style>
+    .dashboard-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .welcome-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .welcome-card h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .welcome-card p {
+        opacity: 0.95;
+        font-size: 1.1rem;
+    }
+
+    .user-info-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .user-info-card h2 {
+        margin-bottom: 1.5rem;
+        color: #333;
+        font-size: 1.5rem;
+    }
+
+    .info-grid {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #555;
+        min-width: 150px;
+    }
+
+    .info-value {
+        color: #333;
+        flex: 1;
+    }
+
+    .role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .role-reader {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .role-author {
+        background: #fff3e0;
+        color: #f57c00;
+    }
+
+    .status-confirmed {
+        color: #4caf50;
+        font-weight: 600;
+    }
+
+    .status-pending {
+        color: #ff9800;
+        font-weight: 600;
+    }
+
+    .actions-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .actions-card h2 {
+        margin-bottom: 1.5rem;
+        color: #333;
+        font-size: 1.5rem;
+    }
+
+    .action-buttons {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .btn-action {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 1rem 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-logout {
+        background: linear-gradient(135deg, #f44336 0%, #e91e63 100%);
+        box-shadow: 0 4px 15px rgba(244, 67, 54, 0.2);
+    }
+
+    .btn-logout:hover {
+        box-shadow: 0 6px 20px rgba(244, 67, 54, 0.3);
+    }
+
+    @media (max-width: 768px) {
+        .welcome-card h1 {
+            font-size: 1.5rem;
         }
 
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            padding: 20px;
+        .action-buttons {
+            grid-template-columns: 1fr;
         }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        .info-item {
+            flex-direction: column;
+            align-items: flex-start;
         }
 
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
+        .info-label {
+            min-width: auto;
         }
+    }
+</style>
 
-        .user-info {
-            background-color: #e8f5e9;
-            padding: 15px;
-            border-radius: 4px;
-            margin: 20px 0;
-            border-left: 4px solid #4CAF50;
-        }
+<div class="container dashboard-container">
+    <div class="welcome-card">
+        <h1>👋 Bienvenue, <?= htmlspecialchars($_SESSION['username']) ?> !</h1>
+        <p>Ravi de vous revoir sur Chrysalide</p>
+    </div>
 
-        .user-info p {
-            margin: 5px 0;
-        }
+    <div class="user-info-card">
+        <h2>📋 Vos informations</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Nom d'utilisateur</span>
+                <span class="info-value"><?= htmlspecialchars($_SESSION['username']) ?></span>
+            </div>
 
-        .role-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-left: 10px;
-        }
+            <div class="info-item">
+                <span class="info-label">Email</span>
+                <span class="info-value"><?= htmlspecialchars($_SESSION['email']) ?></span>
+            </div>
 
-        .role-reader {
-            background-color: #2196F3;
-            color: white;
-        }
+            <div class="info-item">
+                <span class="info-label">Rôle</span>
+                <span class="info-value">
+                    <?php if ($_SESSION['role'] === 'author'): ?>
+                        <span class="role-badge role-author">✍️ Auteur</span>
+                    <?php else: ?>
+                        <span class="role-badge role-reader">📚 Lecteur</span>
+                    <?php endif; ?>
+                </span>
+            </div>
 
-        .role-author {
-            background-color: #FF9800;
-            color: white;
-        }
-
-        .actions {
-            margin: 30px 0;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            margin-right: 10px;
-            background-color: #4CAF50;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-
-        .btn:hover {
-            background-color: #45a049;
-        }
-
-        .btn-logout {
-            background-color: #f44336;
-        }
-
-        .btn-logout:hover {
-            background-color: #da190b;
-        }
-
-        .welcome {
-            margin-bottom: 30px;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <div class="welcome">
-            <h1>Bienvenue sur Chrysalide, <?= htmlspecialchars($_SESSION['username']) ?> !</h1>
-        </div>
-
-        <div class="user-info">
-            <p><strong>Nom d'utilisateur :</strong> <?= htmlspecialchars($_SESSION['username']) ?></p>
-            <p><strong>Email :</strong> <?= htmlspecialchars($_SESSION['email']) ?></p>
-            <p>
-                <strong>Rôle :</strong>
-                <?php if ($_SESSION['role'] === 'author'): ?>
-                    Auteur <span class="role-badge role-author">AUTEUR</span>
-                <?php else: ?>
-                    Lecteur <span class="role-badge role-reader">LECTEUR</span>
-                <?php endif; ?>
-            </p>
-            <p>
-                <strong>Statut :</strong>
-                <?php if ($_SESSION['is_confirmed']): ?>
-                    ✓ Compte confirmé
-                <?php else: ?>
-                    ⚠ En attente de confirmation
-                <?php endif; ?>
-            </p>
-        </div>
-
-        <div class="actions">
-            <h2>Actions disponibles</h2>
-            <p style="margin: 20px 0;">
-                <?php if ($_SESSION['role'] === 'author'): ?>
-                    <a href="<?= BASE_PATH ?>my_stories.php" class="btn">Mes histoires</a>
-                    <a href="<?= BASE_PATH ?>create_story.php" class="btn">Écrire une histoire</a>
-                <?php else: ?>
-                    <a href="<?= BASE_PATH ?>index.php" class="btn">Parcourir les histoires</a>
-                <?php endif; ?>
-
-                <a href="<?= BASE_PATH ?>logout.php" class="btn btn-logout">Se déconnecter</a>
-            </p>
-        </div>
-
-        <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
-
-        <div>
-            <h2>À propos de Chrysalide</h2>
-            <p style="color: #666; line-height: 1.6; margin-top: 10px;">
-                Chrysalide est une plateforme de lecture et d'écriture d'histoires.
-                Les lecteurs peuvent découvrir et lire des histoires créées par des auteurs talentueux.
-                Les auteurs peuvent partager leurs créations avec la communauté.
-            </p>
+            <div class="info-item">
+                <span class="info-label">Statut du compte</span>
+                <span class="info-value">
+                    <?php if ($_SESSION['is_confirmed']): ?>
+                        <span class="status-confirmed">✓ Compte confirmé</span>
+                    <?php else: ?>
+                        <span class="status-pending">⚠ En attente de confirmation</span>
+                    <?php endif; ?>
+                </span>
+            </div>
         </div>
     </div>
-</body>
 
-</html>
+    <div class="actions-card">
+        <h2>🚀 Actions rapides</h2>
+        <div class="action-buttons">
+            <?php if ($_SESSION['role'] === 'author'): ?>
+                <a href="<?= BASE_PATH ?>my_stories.php" class="btn-action">
+                    📚 Mes histoires
+                </a>
+                <a href="<?= BASE_PATH ?>create_story.php" class="btn-action">
+                    ➕ Nouvelle histoire
+                </a>
+            <?php endif; ?>
+
+            <a href="<?= BASE_PATH ?>" class="btn-action">
+                🔍 Découvrir
+            </a>
+
+            <a href="<?= BASE_PATH ?>logout.php" class="btn-action btn-logout">
+                🚪 Se déconnecter
+            </a>
+        </div>
+    </div>
+</div>
+
+<?php include __DIR__ . '/templates/footer.php'; ?>

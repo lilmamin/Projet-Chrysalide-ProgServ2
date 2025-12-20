@@ -1,39 +1,27 @@
 <?php
-
 /**
  * Page "Mes histoires"
- * 
- * Affiche la liste de toutes les histoires créées par l'auteur connecté
- * Permet d'accéder aux actions : modifier, supprimer, publier/dépublier
- * Page protégée - réservée aux utilisateurs avec le rôle "author"
  */
-require_once __DIR__ . '/../src/Classes/Database.php';
 
-// Vérification de l'authentification
+$pageTitle = "Mes histoires";
+
+require_once __DIR__ . '/../src/Classes/Database.php';
+require_once __DIR__ . '/../src/config/app.php';
 require_once __DIR__ . '/auth_check.php';
 
-require_once __DIR__ . '/../src/config/app.php';
-
-// Vérification du rôle : seuls les auteurs peuvent voir cette page
+// Vérification du rôle
 if ($_SESSION['role'] !== 'author') {
     http_response_code(403);
     die('Accès refusé. Seuls les auteurs peuvent accéder à cette page.');
 }
 
-// Récupération des histoires de l'auteur connecté
+// Récupération des histoires
 try {
     $database = new Database();
     $pdo = $database->getPdo();
 
-    // Requête pour récupérer toutes les histoires de l'auteur
     $sql = "SELECT 
-                id,
-                title,
-                summary,
-                is_published,
-                published_at,
-                created_at,
-                updated_at
+                id, title, summary, is_published, published_at, created_at, updated_at
             FROM stories 
             WHERE author_id = :author_id
             ORDER BY created_at DESC";
@@ -51,294 +39,302 @@ try {
     $errorMessage = "Erreur inattendue : " . $e->getMessage();
     $stories = [];
 }
+
+include __DIR__ . '/templates/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="fr">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mes histoires - Chrysalide</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<style>
+    .page-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
 
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            padding: 20px;
-        }
+    .page-title h1 {
+        font-size: 2rem;
+        margin: 0;
+    }
 
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
+    .btn-new {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 0.8rem 1.5rem;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+        border: 2px solid white;
+    }
 
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-        }
+    .btn-new:hover {
+        background: white;
+        color: #667eea;
+    }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
 
-        .back-link {
-            color: #4CAF50;
-            text-decoration: none;
-        }
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
 
-        .back-link:hover {
-            text-decoration: underline;
-        }
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
 
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            font-weight: bold;
-        }
+    .stat-label {
+        color: #666;
+        margin-top: 0.5rem;
+        font-size: 0.95rem;
+    }
 
-        .btn:hover {
-            background-color: #45a049;
-        }
+    .story-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s;
+    }
 
-        .btn-small {
-            padding: 6px 12px;
-            font-size: 14px;
-        }
+    .story-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
+    }
 
-        .btn-edit {
-            background-color: #2196F3;
-        }
+    .story-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        gap: 1rem;
+    }
 
-        .btn-edit:hover {
-            background-color: #0b7dda;
-        }
+    .story-title {
+        font-size: 1.5rem;
+        color: #333;
+        margin: 0;
+        flex: 1;
+    }
 
-        .btn-delete {
-            background-color: #f44336;
-        }
+    .status-badge {
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
 
-        .btn-delete:hover {
-            background-color: #da190b;
-        }
+    .status-published {
+        background: #e8f5e9;
+        color: #4caf50;
+    }
 
-        .error-box {
-            background-color: #ffebee;
-            color: #c62828;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            border-left: 4px solid #c62828;
-        }
+    .status-draft {
+        background: #fff3e0;
+        color: #ff9800;
+    }
 
-        .empty-state {
+    .story-summary {
+        color: #666;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+
+    .story-meta {
+        font-size: 0.9rem;
+        color: #999;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .story-actions {
+        display: flex;
+        gap: 0.8rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+
+    .btn-read {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .btn-read:hover {
+        background: #1976d2;
+        color: white;
+    }
+
+    .btn-edit {
+        background: #f3e5f5;
+        color: #7b1fa2;
+    }
+
+    .btn-edit:hover {
+        background: #7b1fa2;
+        color: white;
+    }
+
+    .btn-delete {
+        background: #ffebee;
+        color: #d32f2f;
+    }
+
+    .btn-delete:hover {
+        background: #d32f2f;
+        color: white;
+    }
+
+    .empty-state {
+        background: white;
+        border-radius: 12px;
+        padding: 4rem 2rem;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .empty-state h2 {
+        color: #999;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state p {
+        color: #666;
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .page-title {
+            flex-direction: column;
             text-align: center;
-            padding: 60px 20px;
-            color: #666;
-        }
-
-        .empty-state h2 {
-            margin-bottom: 15px;
-            color: #999;
-        }
-
-        .story-card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            transition: box-shadow 0.2s;
-        }
-
-        .story-card:hover {
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .story-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-            gap: 15px;
-        }
-
-        .story-title {
-            font-size: 22px;
-            color: #333;
-            margin: 0;
-            flex: 1;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            white-space: nowrap;
-        }
-
-        .status-published {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        .status-draft {
-            background-color: #FF9800;
-            color: white;
-        }
-
-        .story-summary {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 15px;
-        }
-
-        .story-meta {
-            font-size: 14px;
-            color: #999;
-            margin-bottom: 15px;
+            flex-direction: column;
         }
 
         .story-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+            flex-direction: column;
         }
 
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background-color: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
+        .btn-action {
             text-align: center;
         }
+    }
+</style>
 
-        .stat-number {
-            font-size: 32px;
-            font-weight: bold;
-            color: #4CAF50;
-        }
+<div class="container">
+    <div class="page-title">
+        <h1>📚 Mes histoires</h1>
+        <a href="<?= BASE_PATH ?>create_story.php" class="btn-new">➕ Nouvelle histoire</a>
+    </div>
 
-        .stat-label {
-            color: #666;
-            margin-top: 5px;
-        }
-    </style>
-</head>
+    <?php if (isset($errorMessage)): ?>
+        <div style="background: #ffebee; color: #c62828; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <?= htmlspecialchars($errorMessage) ?>
+        </div>
+    <?php endif; ?>
 
-<body>
-    <div class="container">
-        <div class="header">
-            <div>
-                <a href="<?= BASE_PATH ?>dashboard.php" class="back-link">← Retour au tableau de bord</a>
-                <h1 style="margin-top: 10px;">Mes histoires</h1>
+    <?php
+    $totalStories = count($stories);
+    $publishedStories = array_filter($stories, fn($s) => $s['is_published']);
+    $draftStories = array_filter($stories, fn($s) => !$s['is_published']);
+    $publishedCount = count($publishedStories);
+    $draftCount = count($draftStories);
+    ?>
+
+    <?php if ($totalStories > 0): ?>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number"><?= $totalStories ?></div>
+                <div class="stat-label">Total d'histoires</div>
             </div>
-            <a href="create_story.php" class="btn">+ Nouvelle histoire</a>
+            <div class="stat-card">
+                <div class="stat-number"><?= $publishedCount ?></div>
+                <div class="stat-label">Publiées</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number"><?= $draftCount ?></div>
+                <div class="stat-label">Brouillons</div>
+            </div>
         </div>
 
-        <?php if (isset($errorMessage)): ?>
-            <div class="error-box">
-                <?= htmlspecialchars($errorMessage) ?>
+        <?php foreach ($stories as $story): ?>
+            <div class="story-card">
+                <div class="story-header">
+                    <h2 class="story-title"><?= htmlspecialchars($story['title']) ?></h2>
+                    <span class="status-badge <?= $story['is_published'] ? 'status-published' : 'status-draft' ?>">
+                        <?= $story['is_published'] ? '✓ Publiée' : '📝 Brouillon' ?>
+                    </span>
+                </div>
+
+                <div class="story-summary">
+                    <?= htmlspecialchars($story['summary']) ?>
+                </div>
+
+                <div class="story-meta">
+                    Créée le <?= date('d/m/Y à H:i', strtotime($story['created_at'])) ?>
+                    <?php if ($story['is_published'] && $story['published_at']): ?>
+                        • Publiée le <?= date('d/m/Y à H:i', strtotime($story['published_at'])) ?>
+                    <?php endif; ?>
+                    <?php if ($story['updated_at'] !== $story['created_at']): ?>
+                        • Modifiée le <?= date('d/m/Y à H:i', strtotime($story['updated_at'])) ?>
+                    <?php endif; ?>
+                </div>
+
+                <div class="story-actions">
+                    <a href="<?= BASE_PATH ?>read_story.php?id=<?= $story['id'] ?>" class="btn-action btn-read">
+                        👁 Lire
+                    </a>
+                    <a href="<?= BASE_PATH ?>edit_story.php?id=<?= $story['id'] ?>" class="btn-action btn-edit">
+                        ✏️ Modifier
+                    </a>
+                    <a href="<?= BASE_PATH ?>delete_story.php?id=<?= $story['id'] ?>" class="btn-action btn-delete"
+                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette histoire ? Cette action est irréversible.');">
+                        🗑 Supprimer
+                    </a>
+                </div>
             </div>
-        <?php endif; ?>
+        <?php endforeach; ?>
 
-        <?php
-        // Calcul des statistiques
-        $totalStories = count($stories);
-        $publishedStories = array_filter($stories, fn($s) => $s['is_published']);
-        $draftStories = array_filter($stories, fn($s) => !$s['is_published']);
-        $publishedCount = count($publishedStories);
-        $draftCount = count($draftStories);
-        ?>
+    <?php else: ?>
+        <div class="empty-state">
+            <h2>Aucune histoire pour le moment</h2>
+            <p>Vous n'avez pas encore créé d'histoire.</p>
+            <a href="<?= BASE_PATH ?>create_story.php" class="btn-new" style="display: inline-block;">
+                ➕ Créer ma première histoire
+            </a>
+        </div>
+    <?php endif; ?>
+</div>
 
-        <?php if ($totalStories > 0): ?>
-            <div class="stats">
-                <div class="stat-card">
-                    <div class="stat-number"><?= $totalStories ?></div>
-                    <div class="stat-label">Total d'histoires</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number"><?= $publishedCount ?></div>
-                    <div class="stat-label">Publiées</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number"><?= $draftCount ?></div>
-                    <div class="stat-label">Brouillons</div>
-                </div>
-            </div>
-
-            <?php foreach ($stories as $story): ?>
-                <div class="story-card">
-                    <div class="story-header">
-                        <h2 class="story-title"><?= htmlspecialchars($story['title']) ?></h2>
-                        <span class="status-badge <?= $story['is_published'] ? 'status-published' : 'status-draft' ?>">
-                            <?= $story['is_published'] ? 'Publiée' : 'Brouillon' ?>
-                        </span>
-                    </div>
-
-                    <div class="story-summary">
-                        <?= htmlspecialchars($story['summary']) ?>
-                    </div>
-
-                    <div class="story-meta">
-                        Créée le <?= date('d/m/Y à H:i', strtotime($story['created_at'])) ?>
-                        <?php if ($story['is_published'] && $story['published_at']): ?>
-                            • Publiée le <?= date('d/m/Y à H:i', strtotime($story['published_at'])) ?>
-                        <?php endif; ?>
-                        <?php if ($story['updated_at'] !== $story['created_at']): ?>
-                            • Modifiée le <?= date('d/m/Y à H:i', strtotime($story['updated_at'])) ?>
-                        <?php endif; ?>
-                    </div>
-
-                    <div class="story-actions">
-                        <a href="read_story.php?id=<?= $story['id'] ?>" class="btn btn-small">
-                            👁 Lire
-                        </a>
-                        <a href="edit_story.php?id=<?= $story['id'] ?>" class="btn btn-small btn-edit">
-                            ✏️ Modifier
-                        </a>
-                        <a href="delete_story.php?id=<?= $story['id'] ?>" class="btn btn-small btn-delete"
-                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette histoire ? Cette action est irréversible.');">
-                            🗑 Supprimer
-                        </a>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-
-        <?php else: ?>
-            <div class="empty-state">
-                <h2>Aucune histoire pour le moment</h2>
-                <p>Vous n'avez pas encore créé d'histoire.</p>
-                <p style="margin-top: 20px;">
-                    <a href="create_story.php" class="btn">Créer ma première histoire</a>
-                </p>
-            </div>
-        <?php endif; ?>
-    </div>
-</body>
-
-</html>
+<?php include __DIR__ . '/templates/footer.php'; ?>
