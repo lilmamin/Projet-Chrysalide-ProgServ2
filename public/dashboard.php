@@ -141,7 +141,7 @@ require_once __DIR__ . '/auth_check.php';
             <h2>Actions disponibles</h2>
             <p style="margin: 20px 0;">
                 <?php if ($_SESSION['role'] === 'author'): ?>
-                    <a href="stories.php" class="btn">Mes histoires</a>
+                    <a href="my_stories.php" class="btn">Mes histoires</a>
                     <a href="create_story.php" class="btn">Écrire une histoire</a>
                 <?php else: ?>
                     <a href="stories.php" class="btn">Parcourir les histoires</a>
