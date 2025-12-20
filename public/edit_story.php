@@ -1,9 +1,10 @@
 <?php
 /**
- * Page de création d'histoire
+ * Page de modification d'histoire
  * 
- * Permet aux auteurs de créer et publier une nouvelle histoire
+ * Permet aux auteurs de modifier une de leurs histoires existantes
  * Page protégée - réservée aux utilisateurs avec le rôle "author"
+ * Sécurité : un auteur ne peut modifier que ses propres histoires
  */
 
 require_once __DIR__ . '/../src/Classes/Database.php';
@@ -11,19 +12,50 @@ require_once __DIR__ . '/../src/Classes/Database.php';
 // Vérification de l'authentification
 require_once __DIR__ . '/auth_check.php';
 
-// Vérification du rôle : seuls les auteurs peuvent créer des histoires
+// Vérification du rôle : seuls les auteurs peuvent modifier des histoires
 if ($_SESSION['role'] !== 'author') {
-    // Redirection avec message d'erreur
     http_response_code(403);
-    die('Accès refusé. Seuls les auteurs peuvent créer des histoires.');
+    die('Accès refusé. Seuls les auteurs peuvent modifier des histoires.');
 }
 
-// Initialisation des variables
-$title = '';
-$summary = '';
-$content = '';
-$is_published = false;
+// Vérification de la présence de l'ID de l'histoire
+if (!isset($_GET['id']) || empty($_GET['id'])) {
+    header('Location: my_stories.php');
+    exit();
+}
+
+$storyId = (int) $_GET['id'];
 $errors = [];
+
+// Connexion à la base de données
+try {
+    $database = new Database();
+    $pdo = $database->getPdo();
+    
+    // Récupération de l'histoire (seulement si elle appartient à l'auteur connecté)
+    $sql = "SELECT * FROM stories WHERE id = :id AND author_id = :author_id";
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindValue(':id', $storyId, PDO::PARAM_INT);
+    $stmt->bindValue(':author_id', $_SESSION['user_id'], PDO::PARAM_INT);
+    $stmt->execute();
+    
+    $story = $stmt->fetch();
+    
+    // Si l'histoire n'existe pas ou n'appartient pas à l'auteur
+    if (!$story) {
+        header('Location: my_stories.php');
+        exit();
+    }
+    
+} catch (PDOException $e) {
+    die("Erreur lors de la récupération de l'histoire : " . $e->getMessage());
+}
+
+// Initialisation des variables avec les valeurs actuelles
+$title = $story['title'];
+$summary = $story['summary'];
+$content = $story['content'];
+$is_published = (bool) $story['is_published'];
 
 // Traitement du formulaire lors de la soumission
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -59,56 +91,57 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $errors[] = "Le contenu doit contenir au moins 100 caractères.";
     }
     
-    // Si pas d'erreurs, insertion dans la base de données
+    // Si pas d'erreurs, mise à jour dans la base de données
     if (empty($errors)) {
         try {
-            // Connexion à la base de données
-            $database = new Database();
-            $pdo = $database->getPdo();
+            // Déterminer si c'est la première publication
+            $wasPublished = (bool) $story['is_published'];
+            $publishedAt = null;
+            
+            if ($is_published && !$wasPublished) {
+                // Première publication : on définit la date
+                $publishedAt = date('Y-m-d H:i:s');
+            } elseif ($is_published && $wasPublished) {
+                // Déjà publié : on garde la date originale
+                $publishedAt = $story['published_at'];
+            }
+            // Si dépublié : $publishedAt reste null
             
             // Préparation de la requête SQL
-            $sql = "INSERT INTO stories (
-                author_id,
-                title,
-                summary,
-                content,
-                is_published,
-                published_at
-            ) VALUES (
-                :author_id,
-                :title,
-                :summary,
-                :content,
-                :is_published,
-                :published_at
-            )";
+            $sql = "UPDATE stories SET
+                title = :title,
+                summary = :summary,
+                content = :content,
+                is_published = :is_published,
+                published_at = :published_at,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = :id AND author_id = :author_id";
             
             $stmt = $pdo->prepare($sql);
             
             // Liaison des paramètres
-            $stmt->bindValue(':author_id', $_SESSION['user_id'], PDO::PARAM_INT);
             $stmt->bindValue(':title', $title);
             $stmt->bindValue(':summary', $summary);
             $stmt->bindValue(':content', $content);
             $stmt->bindValue(':is_published', $is_published, PDO::PARAM_BOOL);
-            $stmt->bindValue(':published_at', $is_published ? date('Y-m-d H:i:s') : null);
+            $stmt->bindValue(':published_at', $publishedAt);
+            $stmt->bindValue(':id', $storyId, PDO::PARAM_INT);
+            $stmt->bindValue(':author_id', $_SESSION['user_id'], PDO::PARAM_INT);
             
             // Exécution de la requête
             $stmt->execute();
             
             // Message de succès
-            $successMessage = $is_published 
-                ? "Histoire publiée avec succès !" 
-                : "Histoire enregistrée en brouillon.";
+            $successMessage = "Histoire modifiée avec succès !";
             
-            // Réinitialisation des champs du formulaire
-            $title = '';
-            $summary = '';
-            $content = '';
-            $is_published = false;
+            // Rafraîchir les données de l'histoire
+            $story['title'] = $title;
+            $story['summary'] = $summary;
+            $story['content'] = $content;
+            $story['is_published'] = $is_published;
             
         } catch (PDOException $e) {
-            $errors[] = "Erreur lors de l'enregistrement : " . $e->getMessage();
+            $errors[] = "Erreur lors de la modification : " . $e->getMessage();
         } catch (Exception $e) {
             $errors[] = "Erreur inattendue : " . $e->getMessage();
         }
@@ -120,7 +153,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Créer une histoire - Chrysalide</title>
+    <title>Modifier l'histoire - Chrysalide</title>
     <style>
         * {
             margin: 0;
@@ -255,20 +288,37 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             margin-top: 5px;
         }
         
-        .char-count {
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
             font-size: 12px;
-            color: #666;
-            text-align: right;
-            margin-top: 5px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .status-published {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .status-draft {
+            background-color: #FF9800;
+            color: white;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="dashboard.php" class="back-link">← Retour au tableau de bord</a>
+        <a href="my_stories.php" class="back-link">← Retour à mes histoires</a>
         
-        <h1>Créer une nouvelle histoire</h1>
-        <p class="subtitle">Partagez votre créativité avec la communauté</p>
+        <h1>
+            Modifier l'histoire
+            <span class="status-badge <?= $story['is_published'] ? 'status-published' : 'status-draft' ?>">
+                <?= $story['is_published'] ? 'Publiée' : 'Brouillon' ?>
+            </span>
+        </h1>
+        <p class="subtitle">Modifiez votre histoire et enregistrez les changements</p>
         
         <?php if (!empty($errors)): ?>
             <div class="error-box">
@@ -285,12 +335,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <div class="success-box">
                 <?= htmlspecialchars($successMessage) ?>
                 <br><br>
-                <a href="my_stories.php">Voir mes histoires</a> ou 
-                <a href="create_story.php">Créer une autre histoire</a>
+                <a href="my_stories.php">Retour à mes histoires</a> ou 
+                <a href="read_story.php?id=<?= $storyId ?>">Voir l'histoire</a>
             </div>
         <?php endif; ?>
         
-        <form method="POST" action="create_story.php">
+        <form method="POST" action="edit_story.php?id=<?= $storyId ?>">
             <div class="form-group">
                 <label for="title">Titre de l'histoire *</label>
                 <input 
@@ -337,12 +387,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <?= $is_published ? 'checked' : '' ?>
                 >
                 <label for="is_published">
-                    Publier immédiatement (sinon, enregistrer en brouillon)
+                    Publier cette histoire (visible par tous les lecteurs)
                 </label>
             </div>
             
             <div style="margin-top: 30px;">
-                <button type="submit">Enregistrer l'histoire</button>
+                <button type="submit">Enregistrer les modifications</button>
             </div>
         </form>
     </div>

@@ -3,7 +3,6 @@
  * Page d'inscription (Register)
  * 
  * Permet à un utilisateur de créer un compte sur la plateforme Chrysalide
- * Conforme aux bonnes pratiques vues en cours ProgServ2
  */
 
 require_once __DIR__ . '/../src/Classes/Database.php';

@@ -5,7 +5,6 @@
  * Affiche la liste de toutes les histoires créées par l'auteur connecté
  * Permet d'accéder aux actions : modifier, supprimer, publier/dépublier
  * Page protégée - réservée aux utilisateurs avec le rôle "author"
- * Conforme aux bonnes pratiques vues en cours ProgServ2
  */
 
 require_once __DIR__ . '/../src/Classes/Database.php';

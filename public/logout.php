@@ -3,7 +3,6 @@
  * Page de déconnexion (Logout)
  * 
  * Détruit la session de l'utilisateur et le redirige vers la page de connexion
- * Conforme aux bonnes pratiques vues en cours ProgServ2
  */
 
 // Démarrage de la session

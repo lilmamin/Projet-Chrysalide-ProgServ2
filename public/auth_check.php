@@ -5,7 +5,6 @@
  * Ce fichier doit être inclus en haut de chaque page protégée
  * Il vérifie si l'utilisateur est authentifié, sinon il redirige vers la page de connexion
  * 
- * Conforme aux bonnes pratiques vues en cours ProgServ2
  */
 
 // Démarrage de la session

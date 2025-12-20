@@ -4,7 +4,6 @@
  * 
  * Permet à un utilisateur de se connecter à la plateforme Chrysalide
  * Utilise les sessions pour maintenir l'état de connexion
- * Conforme aux bonnes pratiques vues en cours ProgServ2
  */
 
 require_once __DIR__ . '/../src/Classes/Database.php';
