@@ -179,41 +179,41 @@ include __DIR__ . '/templates/header.php';
 
 <div class="container dashboard-container">
     <div class="welcome-card">
-        <h1>👋 Bienvenue, <?= htmlspecialchars($_SESSION['username']) ?> !</h1>
-        <p>Ravi de vous revoir sur Chrysalide</p>
+        <h1>👋 <?= t('welcome') ?>, <?= htmlspecialchars($_SESSION['username']) ?> !</h1>
+        <p><?= $lang === 'fr' ? 'Ravi de vous revoir sur Chrysalide' : 'Nice to see you back on Chrysalide' ?></p>
     </div>
 
     <div class="user-info-card">
-        <h2>📋 Vos informations</h2>
+        <h2>📋 <?= $lang === 'fr' ? 'Vos informations' : 'Your Information' ?></h2>
         <div class="info-grid">
             <div class="info-item">
-                <span class="info-label">Nom d'utilisateur</span>
+                <span class="info-label"><?= t('username') ?></span>
                 <span class="info-value"><?= htmlspecialchars($_SESSION['username']) ?></span>
             </div>
 
             <div class="info-item">
-                <span class="info-label">Email</span>
+                <span class="info-label"><?= t('email') ?></span>
                 <span class="info-value"><?= htmlspecialchars($_SESSION['email']) ?></span>
             </div>
 
             <div class="info-item">
-                <span class="info-label">Rôle</span>
+                <span class="info-label"><?= t('role') ?></span>
                 <span class="info-value">
                     <?php if ($_SESSION['role'] === 'author'): ?>
-                        <span class="role-badge role-author">✍️ Auteur</span>
+                        <span class="role-badge role-author">✍️ <?= t('author') ?></span>
                     <?php else: ?>
-                        <span class="role-badge role-reader">📚 Lecteur</span>
+                        <span class="role-badge role-reader">📚 <?= t('reader') ?></span>
                     <?php endif; ?>
                 </span>
             </div>
 
             <div class="info-item">
-                <span class="info-label">Statut du compte</span>
+                <span class="info-label"><?= $lang === 'fr' ? 'Statut du compte' : 'Account Status' ?></span>
                 <span class="info-value">
                     <?php if ($_SESSION['is_confirmed']): ?>
-                        <span class="status-confirmed">✓ Compte confirmé</span>
+                        <span class="status-confirmed">✓ <?= t('account_confirmed') ?></span>
                     <?php else: ?>
-                        <span class="status-pending">⚠ En attente de confirmation</span>
+                        <span class="status-pending">⚠ <?= t('account_pending') ?></span>
                     <?php endif; ?>
                 </span>
             </div>
@@ -221,23 +221,23 @@ include __DIR__ . '/templates/header.php';
     </div>
 
     <div class="actions-card">
-        <h2>🚀 Actions rapides</h2>
+        <h2>🚀 <?= $lang === 'fr' ? 'Actions rapides' : 'Quick Actions' ?></h2>
         <div class="action-buttons">
             <?php if ($_SESSION['role'] === 'author'): ?>
                 <a href="<?= BASE_PATH ?>my_stories.php" class="btn-action">
-                    📚 Mes histoires
+                    📚 <?= t('my_stories') ?>
                 </a>
                 <a href="<?= BASE_PATH ?>create_story.php" class="btn-action">
-                    ➕ Nouvelle histoire
+                    ➕ <?= t('new_story') ?>
                 </a>
             <?php endif; ?>
 
             <a href="<?= BASE_PATH ?>" class="btn-action">
-                🔍 Découvrir
+                🔍 <?= t('discover') ?>
             </a>
 
             <a href="<?= BASE_PATH ?>logout.php" class="btn-action btn-logout">
-                🚪 Se déconnecter
+                🚪 <?= t('logout') ?>
             </a>
         </div>
     </div>

@@ -8,13 +8,16 @@ if (session_status() === PHP_SESSION_NONE) {
 
 $isLoggedIn = isset($_SESSION['user_id']);
 $isAuthor = $isLoggedIn && ($_SESSION['role'] ?? null) === 'author';
+
+// Détection de la page active
+$currentPage = basename($_SERVER['PHP_SELF']);
 ?>
 <!doctype html>
 <html lang="<?= htmlspecialchars($lang ?? 'fr') ?>">
 
 <head>
     <meta charset="utf-8">
-    <title><?= $pageTitle ?? 'Chrysalide' ?> - Chrysalide</title>
+    <title><?= $pageTitle ?? t('site_name') ?> - <?= t('site_name') ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="<?= BASE_PATH ?>assets/css/app.css">
     <style>
@@ -116,6 +119,12 @@ $isAuthor = $isLoggedIn && ($_SESSION['role'] ?? null) === 'author';
             background: rgba(255, 255, 255, 0.2);
         }
 
+        .nav-main a.active {
+            background: rgba(255, 255, 255, 0.25);
+            border-bottom: 3px solid white;
+            font-weight: 600;
+        }
+
         .nav-main .btn-primary {
             background: rgba(255, 255, 255, 0.2);
             border: 2px solid white;
@@ -196,9 +205,9 @@ $isAuthor = $isLoggedIn && ($_SESSION['role'] ?? null) === 'author';
             <div class="container">
                 <div></div>
                 <div class="lang-switcher">
-                    <a href="?lang=fr">🇫🇷 Français</a>
+                    <a href="?lang=fr">🇫🇷 <?= t('lang_fr') ?></a>
                     <span style="color: rgba(255,255,255,0.5);">|</span>
-                    <a href="?lang=en">🇬🇧 English</a>
+                    <a href="?lang=en">🇬🇧 <?= t('lang_en') ?></a>
                 </div>
             </div>
         </div>
@@ -208,20 +217,31 @@ $isAuthor = $isLoggedIn && ($_SESSION['role'] ?? null) === 'author';
             <div class="container">
                 <!-- Logo -->
                 <a href="<?= BASE_PATH ?>" class="logo">
-                    <img src="<?= BASE_PATH ?>assets/logo_chrysalide.png" alt="Logo Chrysalide">
+                    <img src="<?= BASE_PATH ?>assets/logo_chrysalide.png" alt="<?= t('site_name') ?>">
                 </a>
 
                 <!-- Navigation -->
                 <nav class="nav-main">
-                    <a href="<?= BASE_PATH ?>"><?= t('discover') ?></a>
+                    <a href="<?= BASE_PATH ?>" class="<?= ($currentPage === 'index.php') ? 'active' : '' ?>">
+                        <?= t('discover') ?>
+                    </a>
 
                     <?php if ($isLoggedIn): ?>
                         <?php if ($isAuthor): ?>
-                            <a href="<?= BASE_PATH ?>my_stories.php">Mes histoires</a>
-                            <a href="<?= BASE_PATH ?>create_story.php">Nouvelle histoire</a>
+                            <a href="<?= BASE_PATH ?>my_stories.php"
+                                class="<?= ($currentPage === 'my_stories.php') ? 'active' : '' ?>">
+                                <?= t('my_stories') ?>
+                            </a>
+                            <a href="<?= BASE_PATH ?>create_story.php"
+                                class="<?= ($currentPage === 'create_story.php') ? 'active' : '' ?>">
+                                <?= t('new_story') ?>
+                            </a>
                         <?php endif; ?>
 
-                        <a href="<?= BASE_PATH ?>dashboard.php">Mon dashboard</a>
+                        <a href="<?= BASE_PATH ?>dashboard.php"
+                            class="<?= ($currentPage === 'dashboard.php') ? 'active' : '' ?>">
+                            <?= t('dashboard') ?>
+                        </a>
 
                         <div class="user-info-header">
                             <div class="user-avatar">
@@ -232,8 +252,13 @@ $isAuthor = $isLoggedIn && ($_SESSION['role'] ?? null) === 'author';
 
                         <a href="<?= BASE_PATH ?>logout.php" class="btn-primary"><?= t('logout') ?></a>
                     <?php else: ?>
-                        <a href="<?= BASE_PATH ?>login.php"><?= t('login') ?></a>
-                        <a href="<?= BASE_PATH ?>register.php" class="btn-primary"><?= t('register') ?></a>
+                        <a href="<?= BASE_PATH ?>login.php" class="<?= ($currentPage === 'login.php') ? 'active' : '' ?>">
+                            <?= t('login') ?>
+                        </a>
+                        <a href="<?= BASE_PATH ?>register.php"
+                            class="btn-primary <?= ($currentPage === 'register.php') ? 'active' : '' ?>">
+                            <?= t('register') ?>
+                        </a>
                     <?php endif; ?>
                 </nav>
             </div>

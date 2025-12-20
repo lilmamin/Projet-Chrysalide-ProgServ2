@@ -269,10 +269,9 @@ include __DIR__ . '/templates/header.php';
 </style>
 
 <div class="container form-container">
-    <a href="<?= BASE_PATH ?>dashboard.php" class="back-link">← Retour au tableau de bord</a>
     
     <div class="page-header">
-        <h1>✍️ Créer une nouvelle histoire</h1>
+        <h1>Créer une nouvelle histoire</h1>
         <p>Partagez votre créativité avec la communauté Chrysalide</p>
     </div>
     
@@ -348,7 +347,7 @@ include __DIR__ . '/templates/header.php';
                     <?= $is_published ? 'checked' : '' ?>
                 >
                 <label for="is_published">
-                    📢 Publier immédiatement (sinon, enregistrer en brouillon)
+                    Publier immédiatement (sinon elle sera enregistrée comme brouillon !)
                 </label>
             </div>
             

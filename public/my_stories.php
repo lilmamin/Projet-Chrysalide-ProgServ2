@@ -254,8 +254,8 @@ include __DIR__ . '/templates/header.php';
 
 <div class="container">
     <div class="page-title">
-        <h1>📚 Mes histoires</h1>
-        <a href="<?= BASE_PATH ?>create_story.php" class="btn-new">➕ Nouvelle histoire</a>
+        <h1>📚 <?= t('my_stories') ?></h1>
+        <a href="<?= BASE_PATH ?>create_story.php" class="btn-new">➕ <?= t('new_story') ?></a>
     </div>
 
     <?php if (isset($errorMessage)): ?>
@@ -276,15 +276,15 @@ include __DIR__ . '/templates/header.php';
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-number"><?= $totalStories ?></div>
-                <div class="stat-label">Total d'histoires</div>
+                <div class="stat-label"><?= $lang === 'fr' ? 'Total d\'histoires' : 'Total Stories' ?></div>
             </div>
             <div class="stat-card">
                 <div class="stat-number"><?= $publishedCount ?></div>
-                <div class="stat-label">Publiées</div>
+                <div class="stat-label"><?= t('published') ?></div>
             </div>
             <div class="stat-card">
                 <div class="stat-number"><?= $draftCount ?></div>
-                <div class="stat-label">Brouillons</div>
+                <div class="stat-label"><?= t('drafts') ?></div>
             </div>
         </div>
 
@@ -313,14 +313,14 @@ include __DIR__ . '/templates/header.php';
 
                 <div class="story-actions">
                     <a href="<?= BASE_PATH ?>read_story.php?id=<?= $story['id'] ?>" class="btn-action btn-read">
-                        👁 Lire
+                        👁 <?= t('read') ?>
                     </a>
                     <a href="<?= BASE_PATH ?>edit_story.php?id=<?= $story['id'] ?>" class="btn-action btn-edit">
-                        ✏️ Modifier
+                        ✏️ <?= t('edit') ?>
                     </a>
                     <a href="<?= BASE_PATH ?>delete_story.php?id=<?= $story['id'] ?>" class="btn-action btn-delete"
-                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette histoire ? Cette action est irréversible.');">
-                        🗑 Supprimer
+                        onclick="return confirm('<?= $lang === 'fr' ? 'Êtes-vous sûr de vouloir supprimer cette histoire ? Cette action est irréversible.' : 'Are you sure you want to delete this story? This action is irreversible.' ?>');">
+                        🗑 <?= t('delete') ?>
                     </a>
                 </div>
             </div>
@@ -328,10 +328,11 @@ include __DIR__ . '/templates/header.php';
 
     <?php else: ?>
         <div class="empty-state">
-            <h2>Aucune histoire pour le moment</h2>
-            <p>Vous n'avez pas encore créé d'histoire.</p>
+            <h2><?= t('no_stories') ?></h2>
+            <p><?= $lang === 'fr' ? 'Vous n\'avez pas encore créé d\'histoire.' : 'You haven\'t created any stories yet.' ?>
+            </p>
             <a href="<?= BASE_PATH ?>create_story.php" class="btn-new" style="display: inline-block;">
-                ➕ Créer ma première histoire
+                ➕ <?= t('create_first_story') ?>
             </a>
         </div>
     <?php endif; ?>
