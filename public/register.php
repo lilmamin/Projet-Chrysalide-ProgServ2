@@ -1,264 +1,209 @@
 <?php
 /**
- * Page d'inscription (Register)
- * 
- * Permet à un utilisateur de créer un compte sur la plateforme Chrysalide
+ * Page d'inscription avec envoi d'email de confirmation
  */
 
+$pageTitle = "Inscription";
+
 require_once __DIR__ . '/../src/Classes/Database.php';
+require_once __DIR__ . '/../src/Classes/EmailService.php';
+require_once __DIR__ . '/../src/config/app.php';
+require_once __DIR__ . '/../src/i18n.php';
 
-// Initialisation des variables
-$username = '';
-$email = '';
-$role = 'reader'; // Rôle par défaut
 $errors = [];
+$successMessage = '';
 
-// Traitement du formulaire lors de la soumission
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = trim($_POST['username'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $confirmPassword = $_POST['confirm_password'] ?? '';
+    $role = $_POST['role'] ?? 'reader';
 
-    // Récupération des données du formulaire
-    $username = $_POST["username"] ?? '';
-    $email = $_POST["email"] ?? '';
-    $password = $_POST["password"] ?? '';
-    $passwordConfirm = $_POST["password_confirm"] ?? '';
-    $role = $_POST["role"] ?? 'reader';
-
-    // Validation côté serveur
-
-    // Validation du nom d'utilisateur
+    // Validation
     if (empty($username)) {
-        $errors[] = "Le nom d'utilisateur est requis.";
-    } elseif (strlen($username) < 3) {
-        $errors[] = "Le nom d'utilisateur doit contenir au moins 3 caractères.";
-    } elseif (strlen($username) > 50) {
-        $errors[] = "Le nom d'utilisateur ne peut pas dépasser 50 caractères.";
+        $errors[] = $lang === 'fr' ? "Le nom d'utilisateur est requis." : "Username is required.";
     }
 
-    // Validation de l'email
-    if (empty($email)) {
-        $errors[] = "L'adresse email est requise.";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = "L'adresse email n'est pas valide.";
+    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = $lang === 'fr' ? "Un email valide est requis." : "A valid email is required.";
     }
 
-    // Validation du mot de passe
-    if (empty($password)) {
-        $errors[] = "Le mot de passe est requis.";
-    } elseif (strlen($password) < 8) {
-        $errors[] = "Le mot de passe doit contenir au moins 8 caractères.";
+    if (empty($password) || strlen($password) < 6) {
+        $errors[] = $lang === 'fr' ? "Le mot de passe doit contenir au moins 6 caractères." : "Password must be at least 6 characters.";
     }
 
-    // Validation de la confirmation du mot de passe
-    if ($password !== $passwordConfirm) {
-        $errors[] = "Les mots de passe ne correspondent pas.";
+    if ($password !== $confirmPassword) {
+        $errors[] = $lang === 'fr' ? "Les mots de passe ne correspondent pas." : "Passwords do not match.";
     }
 
-    // Validation du rôle
-    if (!in_array($role, ['reader', 'author'])) {
-        $errors[] = "Le rôle sélectionné n'est pas valide.";
-    }
-
-    // Si pas d'erreurs, insertion dans la base de données
+    // Si pas d'erreurs, insertion en base
     if (empty($errors)) {
         try {
-            // Connexion à la base de données
             $database = new Database();
             $pdo = $database->getPdo();
 
-            // Hashage sécurisé du mot de passe
-            $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+            // Vérifier si l'email existe déjà
+            $sqlCheck = "SELECT id FROM users WHERE email = :email";
+            $stmtCheck = $pdo->prepare($sqlCheck);
+            $stmtCheck->bindValue(':email', $email);
+            $stmtCheck->execute();
 
-            // Génération d'un token de confirmation unique
-            $confirmationToken = bin2hex(random_bytes(32));
+            if ($stmtCheck->fetch()) {
+                $errors[] = $lang === 'fr' ? "Cet email est déjà utilisé." : "This email is already in use.";
+            } else {
+                // Générer le token de confirmation
+                $confirmationToken = bin2hex(random_bytes(32));
 
-            // Préparation de la requête SQL
-            $sql = "INSERT INTO users (
-                username,
-                email,
-                password_hash,
-                role,
-                is_confirmed,
-                confirmation_token
-            ) VALUES (
-                :username,
-                :email,
-                :password_hash,
-                :role,
-                :is_confirmed,
-                :confirmation_token
-            )";
+                // Hasher le mot de passe
+                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-            $stmt = $pdo->prepare($sql);
+                // Insérer l'utilisateur (note: le champ est password_hash dans ta table)
+                $sql = "INSERT INTO users (username, email, password_hash, role, is_confirmed, confirmation_token, created_at) 
+                        VALUES (:username, :email, :password, :role, 0, :token, NOW())";
 
-            // Liaison des paramètres
-            $stmt->bindValue(':username', $username);
-            $stmt->bindValue(':email', $email);
-            $stmt->bindValue(':password_hash', $passwordHash);
-            $stmt->bindValue(':role', $role);
-            $stmt->bindValue(':is_confirmed', false, PDO::PARAM_BOOL);
-            $stmt->bindValue(':confirmation_token', $confirmationToken);
+                $stmt = $pdo->prepare($sql);
+                $stmt->bindValue(':username', $username);
+                $stmt->bindValue(':email', $email);
+                $stmt->bindValue(':password', $hashedPassword);
+                $stmt->bindValue(':role', $role);
+                $stmt->bindValue(':token', $confirmationToken);
+                $stmt->execute();
 
-            // Exécution de la requête
-            $stmt->execute();
+                // Envoyer l'email de confirmation
+                try {
+                    $emailService = new EmailService();
+                    $emailSent = $emailService->sendConfirmationEmail($email, $username, $confirmationToken, $lang);
 
-            // Message de succès (en production, on enverrait un email ici)
-            $successMessage = "Compte créé avec succès ! Un email de confirmation a été envoyé à votre adresse.";
-
-            // Réinitialisation des champs du formulaire
-            $username = '';
-            $email = '';
-            $role = 'reader';
+                    if ($emailSent) {
+                        $successMessage = $lang === 'fr' ?
+                            "Inscription réussie ! Un email de confirmation a été envoyé à $email. Vérifiez votre boîte de réception." :
+                            "Registration successful! A confirmation email has been sent to $email. Check your inbox.";
+                    } else {
+                        $successMessage = $lang === 'fr' ?
+                            "Inscription réussie ! Cependant, l'email de confirmation n'a pas pu être envoyé. Contactez l'administrateur." :
+                            "Registration successful! However, the confirmation email could not be sent. Contact the administrator.";
+                    }
+                } catch (Exception $e) {
+                    error_log("Erreur envoi email : " . $e->getMessage());
+                    $successMessage = $lang === 'fr' ?
+                        "Inscription réussie ! Cependant, une erreur est survenue lors de l'envoi de l'email de confirmation." :
+                        "Registration successful! However, an error occurred while sending the confirmation email.";
+                }
+            }
 
         } catch (PDOException $e) {
-            // Gestion des erreurs de base de données
-            // Code 23000 = violation de contrainte (email ou username déjà utilisé)
-            if ($e->getCode() === "23000") {
-                $errors[] = "Cette adresse email ou ce nom d'utilisateur est déjà utilisé.";
-            } else {
-                $errors[] = "Erreur lors de l'inscription : " . $e->getMessage();
-            }
-        } catch (Exception $e) {
-            $errors[] = "Erreur inattendue : " . $e->getMessage();
+            $errors[] = $lang === 'fr' ? "Erreur lors de l'inscription : " . $e->getMessage() : "Registration error: " . $e->getMessage();
         }
     }
 }
+
+include __DIR__ . '/templates/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="fr">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription - Chrysalide</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<style>
+    .register-container {
+        max-width: 500px;
+        margin: 0 auto;
+    }
 
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            padding: 20px;
-        }
+    .form-card {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
 
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
+    .form-card h1 {
+        color: #667eea;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
 
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-        }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
 
-        .subtitle {
-            color: #666;
-            margin-bottom: 30px;
-        }
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #333;
+        font-weight: 600;
+    }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 0.8rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
 
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #333;
-            font-weight: bold;
-        }
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
 
-        input[type="text"],
-        input[type="email"],
-        input[type="password"],
-        select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
+    .btn-submit {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
 
-        input:focus,
-        select:focus {
-            outline: none;
-            border-color: #4CAF50;
-        }
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
 
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-        }
+    .alert-error {
+        background: #ffebee;
+        color: #c62828;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #c62828;
+    }
 
-        button:hover {
-            background-color: #45a049;
-        }
+    .alert-success {
+        background: #e8f5e9;
+        color: #2e7d32;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #2e7d32;
+    }
 
-        .error-box {
-            background-color: #ffebee;
-            color: #c62828;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            border-left: 4px solid #c62828;
-        }
+    .login-link {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: #666;
+    }
 
-        .error-box ul {
-            margin-left: 20px;
-        }
+    .login-link a {
+        color: #667eea;
+        font-weight: 600;
+        text-decoration: none;
+    }
+</style>
 
-        .success-box {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            border-left: 4px solid #2e7d32;
-        }
-
-        .login-link {
-            text-align: center;
-            margin-top: 20px;
-            color: #666;
-        }
-
-        .login-link a {
-            color: #4CAF50;
-            text-decoration: none;
-        }
-
-        .login-link a:hover {
-            text-decoration: underline;
-        }
-
-        .help-text {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <h1>Inscription</h1>
-        <p class="subtitle">Créez votre compte sur Chrysalide</p>
+<div class="container register-container">
+    <div class="form-card">
+        <h1>📝 <?= $lang === 'fr' ? 'Inscription' : 'Sign Up' ?></h1>
 
         <?php if (!empty($errors)): ?>
-            <div class="error-box">
-                <strong>Erreurs :</strong>
+            <div class="alert-error">
+                <strong>❌ <?= $lang === 'fr' ? 'Erreurs :' : 'Errors:' ?></strong>
                 <ul>
                     <?php foreach ($errors as $error): ?>
                         <li><?= htmlspecialchars($error) ?></li>
@@ -267,55 +212,55 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             </div>
         <?php endif; ?>
 
-        <?php if (isset($successMessage)): ?>
-            <div class="success-box">
-                <?= htmlspecialchars($successMessage) ?>
+        <?php if ($successMessage): ?>
+            <div class="alert-success">
+                <strong>✓ <?= htmlspecialchars($successMessage) ?></strong>
+                <p style="margin-top: 1rem;">
+                    <a href="<?= BASE_PATH ?>login.php"><?= $lang === 'fr' ? 'Se connecter' : 'Log in' ?></a>
+                </p>
+            </div>
+        <?php else: ?>
+            <form method="POST">
+                <div class="form-group">
+                    <label for="username"><?= $lang === 'fr' ? 'Nom d\'utilisateur' : 'Username' ?> *</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password"><?= $lang === 'fr' ? 'Mot de passe' : 'Password' ?> *</label>
+                    <input type="password" id="password" name="password" required minlength="6">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password"><?= $lang === 'fr' ? 'Confirmer le mot de passe' : 'Confirm Password' ?>
+                        *</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="role"><?= $lang === 'fr' ? 'Rôle' : 'Role' ?> *</label>
+                    <select id="role" name="role" required>
+                        <option value="reader"><?= $lang === 'fr' ? 'Lecteur' : 'Reader' ?></option>
+                        <option value="author"><?= $lang === 'fr' ? 'Auteur' : 'Author' ?></option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <?= $lang === 'fr' ? 'S\'inscrire' : 'Sign Up' ?>
+                </button>
+            </form>
+
+            <div class="login-link">
+                <?= $lang === 'fr' ? 'Déjà un compte ?' : 'Already have an account?' ?>
+                <a href="<?= BASE_PATH ?>login.php"><?= $lang === 'fr' ? 'Se connecter' : 'Log in' ?></a>
             </div>
         <?php endif; ?>
-
-        <form method="POST" action="register.php">
-            <div class="form-group">
-                <label for="username">Nom d'utilisateur *</label>
-                <input type="text" id="username" name="username" value="<?= htmlspecialchars($username) ?>" required
-                    minlength="3" maxlength="50">
-                <p class="help-text">Entre 3 et 50 caractères</p>
-            </div>
-
-            <div class="form-group">
-                <label for="email">Adresse email *</label>
-                <input type="email" id="email" name="email" value="<?= htmlspecialchars($email) ?>" required>
-            </div>
-
-            <div class="form-group">
-                <label for="password">Mot de passe *</label>
-                <input type="password" id="password" name="password" required minlength="8">
-                <p class="help-text">Au moins 8 caractères</p>
-            </div>
-
-            <div class="form-group">
-                <label for="password_confirm">Confirmer le mot de passe *</label>
-                <input type="password" id="password_confirm" name="password_confirm" required minlength="8">
-            </div>
-
-            <div class="form-group">
-                <label for="role">Je souhaite m'inscrire en tant que *</label>
-                <select id="role" name="role" required>
-                    <option value="reader" <?= $role === 'reader' ? 'selected' : '' ?>>
-                        Lecteur (lire des histoires)
-                    </option>
-                    <option value="author" <?= $role === 'author' ? 'selected' : '' ?>>
-                        Auteur (écrire et publier des histoires)
-                    </option>
-                </select>
-            </div>
-
-            <button type="submit">Créer mon compte</button>
-        </form>
-
-        <div class="login-link">
-            Vous avez déjà un compte ? <a href="login.php">Se connecter</a>
-        </div>
     </div>
-</body>
+</div>
 
-</html>
+<?php include __DIR__ . '/templates/footer.php'; ?>
