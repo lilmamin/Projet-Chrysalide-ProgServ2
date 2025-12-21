@@ -4,39 +4,45 @@
     <div class="container">
         <div class="footer-content">
             <div class="footer-section">
-                <h3>Chrysalide</h3>
-                <p>Plateforme de lecture et d'écriture d'histoires</p>
+                <h3><?= t('site_name') ?></h3>
+                <p><?= $lang === 'fr' ? 'Plateforme de lecture et d\'écriture d\'histoires' : 'Reading and writing platform for stories' ?>
+                </p>
             </div>
 
             <div class="footer-section">
-                <h4>Navigation</h4>
+                <h4><?= $lang === 'fr' ? 'Navigation' : 'Navigation' ?></h4>
                 <ul class="footer-links">
-                    <li><a href="<?= BASE_PATH ?>">Découvrir les histoires</a></li>
+                    <li><a
+                            href="<?= BASE_PATH ?>"><?= $lang === 'fr' ? 'Découvrir les histoires' : 'Discover Stories' ?></a>
+                    </li>
                     <?php if ($isLoggedIn): ?>
-                        <li><a href="<?= BASE_PATH ?>dashboard.php">Mon espace</a></li>
+                        <li><a href="<?= BASE_PATH ?>dashboard.php"><?= t('dashboard') ?></a></li>
                         <?php if ($isAuthor): ?>
-                            <li><a href="<?= BASE_PATH ?>my_stories.php">Mes histoires</a></li>
+                            <li><a href="<?= BASE_PATH ?>my_stories.php"><?= t('my_stories') ?></a></li>
                         <?php endif; ?>
                     <?php else: ?>
-                        <li><a href="<?= BASE_PATH ?>register.php">Créer un compte</a></li>
-                        <li><a href="<?= BASE_PATH ?>login.php">Se connecter</a></li>
+                        <li><a
+                                href="<?= BASE_PATH ?>register.php"><?= $lang === 'fr' ? 'Créer un compte' : 'Create an Account' ?></a>
+                        </li>
+                        <li><a href="<?= BASE_PATH ?>login.php"><?= $lang === 'fr' ? 'Se connecter' : 'Log In' ?></a></li>
                     <?php endif; ?>
                 </ul>
             </div>
 
             <div class="footer-section">
-                <h4>À propos</h4>
+                <h4><?= t('about') ?></h4>
                 <ul class="footer-links">
-                    <li><a href="#">Qui sommes-nous ?</a></li>
-                    <li><a href="#">Conditions d'utilisation</a></li>
-                    <li><a href="#">Confidentialité</a></li>
+                    <li><a href="#"><?= t('who_are_we') ?></a></li>
+                    <li><a href="#"><?= t('terms') ?></a></li>
+                    <li><a href="#"><?= t('privacy') ?></a></li>
                 </ul>
             </div>
         </div>
 
         <div class="footer-bottom">
-            <p>&copy; <?= date('Y') ?> Chrysalide. Tous droits réservés.</p>
-            <p>Projet réalisé dans le cadre du cours ProgServ2 - HEIG-VD</p>
+            <p>&copy; <?= date('Y') ?> <?= t('site_name') ?>. <?= t('all_rights_reserved') ?>.</p>
+            <p><?= $lang === 'fr' ? 'Projet réalisé dans le cadre du cours ProgServ2 - HEIG-VD' : 'Project developed as part of ProgServ2 course - HEIG-VD' ?>
+            </p>
         </div>
     </div>
 </footer>

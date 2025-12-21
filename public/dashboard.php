@@ -109,24 +109,7 @@ include __DIR__ . '/templates/header.php';
         font-weight: 600;
     }
 
-    .actions-card {
-        background: white;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    }
 
-    .actions-card h2 {
-        margin-bottom: 1.5rem;
-        color: #333;
-        font-size: 1.5rem;
-    }
-
-    .action-buttons {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-    }
 
     .btn-action {
         display: flex;
@@ -179,7 +162,7 @@ include __DIR__ . '/templates/header.php';
 
 <div class="container dashboard-container">
     <div class="welcome-card">
-        <h1>👋 <?= t('welcome') ?>, <?= htmlspecialchars($_SESSION['username']) ?> !</h1>
+        <h1><?= t('welcome') ?>, <?= htmlspecialchars($_SESSION['username']) ?> !</h1>
         <p><?= $lang === 'fr' ? 'Ravi de vous revoir sur Chrysalide' : 'Nice to see you back on Chrysalide' ?></p>
     </div>
 
@@ -220,27 +203,8 @@ include __DIR__ . '/templates/header.php';
         </div>
     </div>
 
-    <div class="actions-card">
-        <h2>🚀 <?= $lang === 'fr' ? 'Actions rapides' : 'Quick Actions' ?></h2>
-        <div class="action-buttons">
-            <?php if ($_SESSION['role'] === 'author'): ?>
-                <a href="<?= BASE_PATH ?>my_stories.php" class="btn-action">
-                    📚 <?= t('my_stories') ?>
-                </a>
-                <a href="<?= BASE_PATH ?>create_story.php" class="btn-action">
-                    ➕ <?= t('new_story') ?>
-                </a>
-            <?php endif; ?>
 
-            <a href="<?= BASE_PATH ?>" class="btn-action">
-                🔍 <?= t('discover') ?>
-            </a>
-
-            <a href="<?= BASE_PATH ?>logout.php" class="btn-action btn-logout">
-                🚪 <?= t('logout') ?>
-            </a>
-        </div>
-    </div>
+</div>
 </div>
 
 <?php include __DIR__ . '/templates/footer.php'; ?>

@@ -91,6 +91,8 @@ $T = [
         'published_on' => 'Publié le',
         'created_on' => 'Créé le',
         'updated_on' => 'Modifié le',
+        'created' => 'Créée le',
+        'modified' => 'Modifiée le',
 
         // Authentification
         'username' => 'Nom d\'utilisateur',
@@ -196,6 +198,8 @@ $T = [
         'published_on' => 'Published on',
         'created_on' => 'Created on',
         'updated_on' => 'Updated on',
+        'created' => 'Created on',
+        'modified' => 'Updated on',
 
         // Authentification
         'username' => 'Username',

@@ -12,7 +12,7 @@ require_once __DIR__ . '/auth_check.php';
 // Vérification du rôle
 if ($_SESSION['role'] !== 'author') {
     http_response_code(403);
-    die('Accès refusé. Seuls les auteurs peuvent modifier des histoires.');
+    die($lang === 'fr' ? 'Accès refusé. Seuls les auteurs peuvent modifier des histoires.' : 'Access denied. Only authors can edit stories.');
 }
 
 // Vérification de la présence de l'ID
@@ -43,7 +43,7 @@ try {
     }
     
 } catch (PDOException $e) {
-    die("Erreur lors de la récupération de l'histoire : " . $e->getMessage());
+    die(($lang === 'fr' ? "Erreur lors de la récupération de l'histoire : " : "Error retrieving story: ") . $e->getMessage());
 }
 
 // Initialisation des variables
@@ -61,23 +61,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     
     // Validation
     if (empty($title)) {
-        $errors[] = "Le titre est requis.";
+        $errors[] = $lang === 'fr' ? "Le titre est requis." : "Title is required.";
     } elseif (strlen($title) < 3) {
-        $errors[] = "Le titre doit contenir au moins 3 caractères.";
+        $errors[] = $lang === 'fr' ? "Le titre doit contenir au moins 3 caractères." : "Title must be at least 3 characters.";
     } elseif (strlen($title) > 255) {
-        $errors[] = "Le titre ne peut pas dépasser 255 caractères.";
+        $errors[] = $lang === 'fr' ? "Le titre ne peut pas dépasser 255 caractères." : "Title cannot exceed 255 characters.";
     }
     
     if (empty($summary)) {
-        $errors[] = "Le résumé est requis.";
+        $errors[] = $lang === 'fr' ? "Le résumé est requis." : "Summary is required.";
     } elseif (strlen($summary) < 10) {
-        $errors[] = "Le résumé doit contenir au moins 10 caractères.";
+        $errors[] = $lang === 'fr' ? "Le résumé doit contenir au moins 10 caractères." : "Summary must be at least 10 characters.";
     }
     
     if (empty($content)) {
-        $errors[] = "Le contenu de l'histoire est requis.";
+        $errors[] = $lang === 'fr' ? "Le contenu de l'histoire est requis." : "Story content is required.";
     } elseif (strlen($content) < 100) {
-        $errors[] = "Le contenu doit contenir au moins 100 caractères.";
+        $errors[] = $lang === 'fr' ? "Le contenu doit contenir au moins 100 caractères." : "Content must be at least 100 characters.";
     }
     
     // Mise à jour si pas d'erreurs
@@ -111,7 +111,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $stmt->bindValue(':author_id', $_SESSION['user_id'], PDO::PARAM_INT);
             $stmt->execute();
             
-            $successMessage = "Histoire modifiée avec succès !";
+            $successMessage = $lang === 'fr' ? "Histoire modifiée avec succès !" : "Story updated successfully!";
             
             $story['title'] = $title;
             $story['summary'] = $summary;
@@ -119,9 +119,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $story['is_published'] = $is_published;
             
         } catch (PDOException $e) {
-            $errors[] = "Erreur lors de la modification : " . $e->getMessage();
+            $errors[] = ($lang === 'fr' ? "Erreur lors de la modification : " : "Error updating: ") . $e->getMessage();
         } catch (Exception $e) {
-            $errors[] = "Erreur inattendue : " . $e->getMessage();
+            $errors[] = ($lang === 'fr' ? "Erreur inattendue : " : "Unexpected error: ") . $e->getMessage();
         }
     }
 }
@@ -312,21 +312,29 @@ include __DIR__ . '/templates/header.php';
 </style>
 
 <div class="container">
-    <a href="<?= BASE_PATH ?>my_stories.php" class="back-link">← Retour à mes histoires</a>
+    <a href="<?= BASE_PATH ?>my_stories.php" class="back-link">
+        ← <?= $lang === 'fr' ? 'Retour à mes histoires' : 'Back to My Stories' ?>
+    </a>
 
     <div class="page-header-edit">
         <h1>
-            ✏️ Modifier l'histoire
+            <?= $lang === 'fr' ? 'Modifier l\'histoire' : 'Edit Story' ?>
             <span class="status-badge">
-                <?= $story['is_published'] ? '✓ Publiée' : '📝 Brouillon' ?>
+                <?php if ($story['is_published']): ?>
+                    ✓ <?= $lang === 'fr' ? 'Publiée' : 'Published' ?>
+                <?php else: ?>
+                    <?= $lang === 'fr' ? 'Brouillon' : 'Draft' ?>
+                <?php endif; ?>
             </span>
         </h1>
-        <p class="subtitle">Modifiez votre histoire et enregistrez les changements</p>
+        <p class="subtitle">
+            <?= $lang === 'fr' ? 'Modifiez votre histoire et enregistrez les changements' : 'Edit your story and save the changes' ?>
+        </p>
     </div>
 
     <?php if (!empty($errors)): ?>
         <div class="alert-error">
-            <strong>❌ Erreurs :</strong>
+            <strong>❌ <?= $lang === 'fr' ? 'Erreurs :' : 'Errors:' ?></strong>
             <ul>
                 <?php foreach ($errors as $error): ?>
                     <li><?= htmlspecialchars($error) ?></li>
@@ -338,15 +346,15 @@ include __DIR__ . '/templates/header.php';
     <?php if (isset($successMessage)): ?>
         <div class="alert-success">
             <strong>✓ <?= htmlspecialchars($successMessage) ?></strong><br><br>
-            <a href="<?= BASE_PATH ?>my_stories.php">← Retour à mes histoires</a> ou 
-            <a href="<?= BASE_PATH ?>read_story.php?id=<?= $storyId ?>">👁 Voir l'histoire</a>
+            <a href="<?= BASE_PATH ?>my_stories.php">← <?= $lang === 'fr' ? 'Retour à mes histoires' : 'Back to My Stories' ?></a> <?= $lang === 'fr' ? 'ou' : 'or' ?> 
+            <a href="<?= BASE_PATH ?>read_story.php?id=<?= $storyId ?>">👁 <?= $lang === 'fr' ? 'Voir l\'histoire' : 'View Story' ?></a>
         </div>
     <?php endif; ?>
 
     <div class="form-card">
         <form method="POST" action="<?= BASE_PATH ?>edit_story.php?id=<?= $storyId ?>">
             <div class="form-group">
-                <label for="title">📝 Titre de l'histoire *</label>
+                <label for="title">📝 <?= t('story_title') ?> *</label>
                 <input 
                     type="text" 
                     id="title" 
@@ -355,35 +363,39 @@ include __DIR__ . '/templates/header.php';
                     required 
                     minlength="3"
                     maxlength="255"
-                    placeholder="Un titre accrocheur..."
+                    placeholder="<?= $lang === 'fr' ? 'Un titre accrocheur...' : 'A captivating title...' ?>"
                 >
-                <p class="help-text">Entre 3 et 255 caractères</p>
+                <p class="help-text"><?= $lang === 'fr' ? 'Entre 3 et 255 caractères' : '3 to 255 characters' ?></p>
             </div>
 
             <div class="form-group">
-                <label for="summary">📄 Résumé *</label>
+                <label for="summary">📄 <?= t('story_summary') ?> *</label>
                 <textarea 
                     id="summary" 
                     name="summary" 
                     required
                     minlength="10"
                     style="min-height: 120px;"
-                    placeholder="Un résumé captivant qui donnera envie de lire votre histoire..."
+                    placeholder="<?= $lang === 'fr' ? 'Un résumé captivant qui donnera envie de lire votre histoire...' : 'A captivating summary that will make readers want to read your story...' ?>"
                 ><?= htmlspecialchars($summary) ?></textarea>
-                <p class="help-text">Minimum 10 caractères - Résumé accrocheur de votre histoire</p>
+                <p class="help-text">
+                    <?= $lang === 'fr' ? 'Minimum 10 caractères - Résumé accrocheur de votre histoire' : 'Minimum 10 characters - Captivating summary of your story' ?>
+                </p>
             </div>
 
             <div class="form-group">
-                <label for="content">📖 Contenu de l'histoire *</label>
+                <label for="content">📖 <?= t('story_content') ?> *</label>
                 <textarea 
                     id="content" 
                     name="content" 
                     required
                     minlength="100"
                     style="min-height: 400px;"
-                    placeholder="Il était une fois..."
+                    placeholder="<?= $lang === 'fr' ? 'Il était une fois...' : 'Once upon a time...' ?>"
                 ><?= htmlspecialchars($content) ?></textarea>
-                <p class="help-text">Minimum 100 caractères - Le contenu complet de votre histoire</p>
+                <p class="help-text">
+                    <?= $lang === 'fr' ? 'Minimum 100 caractères - Le contenu complet de votre histoire' : 'Minimum 100 characters - Full story content' ?>
+                </p>
             </div>
 
             <div class="checkbox-group">
@@ -395,13 +407,14 @@ include __DIR__ . '/templates/header.php';
                     <?= $is_published ? 'checked' : '' ?>
                 >
                 <label for="is_published">
-                    <strong>📢 Publier cette histoire</strong> (visible par tous les lecteurs)
+                    <strong>📢 <?= $lang === 'fr' ? 'Publier cette histoire' : 'Publish this story' ?></strong> 
+                    (<?= $lang === 'fr' ? 'visible par tous les lecteurs' : 'visible to all readers' ?>)
                 </label>
             </div>
 
             <div style="margin-top: 2rem;">
                 <button type="submit" class="btn-submit">
-                    💾 Enregistrer les modifications
+                    💾 <?= $lang === 'fr' ? 'Enregistrer les modifications' : 'Save Changes' ?>
                 </button>
             </div>
         </form>

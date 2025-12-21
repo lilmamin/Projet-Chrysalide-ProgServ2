@@ -254,8 +254,7 @@ include __DIR__ . '/templates/header.php';
 
 <div class="container">
     <div class="page-title">
-        <h1>📚 <?= t('my_stories') ?></h1>
-        <a href="<?= BASE_PATH ?>create_story.php" class="btn-new">➕ <?= t('new_story') ?></a>
+        <h1><?= t('my_stories') ?></h1>
     </div>
 
     <?php if (isset($errorMessage)): ?>
@@ -293,7 +292,11 @@ include __DIR__ . '/templates/header.php';
                 <div class="story-header">
                     <h2 class="story-title"><?= htmlspecialchars($story['title']) ?></h2>
                     <span class="status-badge <?= $story['is_published'] ? 'status-published' : 'status-draft' ?>">
-                        <?= $story['is_published'] ? '✓ Publiée' : '📝 Brouillon' ?>
+                        <?php if ($story['is_published']): ?>
+                            ✓ <?= $lang === 'fr' ? 'Publiée' : 'Published' ?>
+                        <?php else: ?>
+                            📝 <?= $lang === 'fr' ? 'Brouillon' : 'Draft' ?>
+                        <?php endif; ?>
                     </span>
                 </div>
 
@@ -302,12 +305,15 @@ include __DIR__ . '/templates/header.php';
                 </div>
 
                 <div class="story-meta">
-                    Créée le <?= date('d/m/Y à H:i', strtotime($story['created_at'])) ?>
+                    <?= $lang === 'fr' ? 'Créée le' : 'Created on' ?>
+                    <?= date('d/m/Y à H:i', strtotime($story['created_at'])) ?>
                     <?php if ($story['is_published'] && $story['published_at']): ?>
-                        • Publiée le <?= date('d/m/Y à H:i', strtotime($story['published_at'])) ?>
+                        • <?= $lang === 'fr' ? 'Publiée le' : 'Published on' ?>
+                        <?= date('d/m/Y à H:i', strtotime($story['published_at'])) ?>
                     <?php endif; ?>
                     <?php if ($story['updated_at'] !== $story['created_at']): ?>
-                        • Modifiée le <?= date('d/m/Y à H:i', strtotime($story['updated_at'])) ?>
+                        • <?= $lang === 'fr' ? 'Modifiée le' : 'Updated on' ?>
+                        <?= date('d/m/Y à H:i', strtotime($story['updated_at'])) ?>
                     <?php endif; ?>
                 </div>
 

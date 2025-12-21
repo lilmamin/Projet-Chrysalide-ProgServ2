@@ -12,7 +12,7 @@ require_once __DIR__ . '/auth_check.php';
 // Vérification du rôle
 if ($_SESSION['role'] !== 'author') {
     http_response_code(403);
-    die('Accès refusé. Seuls les auteurs peuvent créer des histoires.');
+    die($lang === 'fr' ? 'Accès refusé. Seuls les auteurs peuvent créer des histoires.' : 'Access denied. Only authors can create stories.');
 }
 
 // Initialisation des variables
@@ -32,23 +32,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     
     // Validation
     if (empty($title)) {
-        $errors[] = "Le titre est requis.";
+        $errors[] = $lang === 'fr' ? "Le titre est requis." : "Title is required.";
     } elseif (strlen($title) < 3) {
-        $errors[] = "Le titre doit contenir au moins 3 caractères.";
+        $errors[] = $lang === 'fr' ? "Le titre doit contenir au moins 3 caractères." : "Title must be at least 3 characters.";
     } elseif (strlen($title) > 255) {
-        $errors[] = "Le titre ne peut pas dépasser 255 caractères.";
+        $errors[] = $lang === 'fr' ? "Le titre ne peut pas dépasser 255 caractères." : "Title cannot exceed 255 characters.";
     }
     
     if (empty($summary)) {
-        $errors[] = "Le résumé est requis.";
+        $errors[] = $lang === 'fr' ? "Le résumé est requis." : "Summary is required.";
     } elseif (strlen($summary) < 10) {
-        $errors[] = "Le résumé doit contenir au moins 10 caractères.";
+        $errors[] = $lang === 'fr' ? "Le résumé doit contenir au moins 10 caractères." : "Summary must be at least 10 characters.";
     }
     
     if (empty($content)) {
-        $errors[] = "Le contenu de l'histoire est requis.";
+        $errors[] = $lang === 'fr' ? "Le contenu de l'histoire est requis." : "Story content is required.";
     } elseif (strlen($content) < 100) {
-        $errors[] = "Le contenu doit contenir au moins 100 caractères.";
+        $errors[] = $lang === 'fr' ? "Le contenu doit contenir au moins 100 caractères." : "Content must be at least 100 characters.";
     }
     
     // Insertion si pas d'erreurs
@@ -74,8 +74,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $stmt->execute();
             
             $successMessage = $is_published 
-                ? "Histoire publiée avec succès !" 
-                : "Histoire enregistrée en brouillon.";
+                ? ($lang === 'fr' ? "Histoire publiée avec succès !" : "Story published successfully!")
+                : ($lang === 'fr' ? "Histoire enregistrée en brouillon." : "Story saved as draft.");
             
             $title = '';
             $summary = '';
@@ -83,7 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $is_published = false;
             
         } catch (PDOException $e) {
-            $errors[] = "Erreur lors de l'enregistrement : " . $e->getMessage();
+            $errors[] = ($lang === 'fr' ? "Erreur lors de l'enregistrement : " : "Error saving: ") . $e->getMessage();
         }
     }
 }
@@ -271,13 +271,13 @@ include __DIR__ . '/templates/header.php';
 <div class="container form-container">
     
     <div class="page-header">
-        <h1>Créer une nouvelle histoire</h1>
-        <p>Partagez votre créativité avec la communauté Chrysalide</p>
+        <h1><?= $lang === 'fr' ? 'Créer une nouvelle histoire' : 'Create a New Story' ?></h1>
+        <p><?= $lang === 'fr' ? 'Partagez votre créativité avec la communauté Chrysalide' : 'Share your creativity with the Chrysalide community' ?></p>
     </div>
     
     <?php if (!empty($errors)): ?>
         <div class="alert alert-error">
-            <strong>⚠️ Erreurs :</strong>
+            <strong>⚠️ <?= $lang === 'fr' ? 'Erreurs :' : 'Errors:' ?></strong>
             <ul>
                 <?php foreach ($errors as $error): ?>
                     <li><?= htmlspecialchars($error) ?></li>
@@ -290,15 +290,15 @@ include __DIR__ . '/templates/header.php';
         <div class="alert alert-success">
             <strong>✓ <?= htmlspecialchars($successMessage) ?></strong>
             <br><br>
-            <a href="<?= BASE_PATH ?>my_stories.php">Voir mes histoires</a> ou 
-            <a href="<?= BASE_PATH ?>create_story.php">Créer une autre histoire</a>
+            <a href="<?= BASE_PATH ?>my_stories.php"><?= $lang === 'fr' ? 'Voir mes histoires' : 'View my stories' ?></a> <?= $lang === 'fr' ? 'ou' : 'or' ?> 
+            <a href="<?= BASE_PATH ?>create_story.php"><?= $lang === 'fr' ? 'Créer une autre histoire' : 'Create another story' ?></a>
         </div>
     <?php endif; ?>
     
     <div class="form-card">
         <form method="POST" action="<?= BASE_PATH ?>create_story.php">
             <div class="form-group">
-                <label for="title">Titre de l'histoire *</label>
+                <label for="title">📝 <?= t('story_title') ?> *</label>
                 <input 
                     type="text" 
                     id="title" 
@@ -307,35 +307,35 @@ include __DIR__ . '/templates/header.php';
                     required 
                     minlength="3"
                     maxlength="255"
-                    placeholder="Ex: Le voyage extraordinaire"
+                    placeholder="<?= $lang === 'fr' ? 'Ex: Le voyage extraordinaire' : 'e.g., The Extraordinary Journey' ?>"
                 >
-                <p class="help-text">Entre 3 et 255 caractères</p>
+                <p class="help-text"><?= $lang === 'fr' ? 'Entre 3 et 255 caractères' : '3 to 255 characters' ?></p>
             </div>
             
             <div class="form-group">
-                <label for="summary">Résumé *</label>
+                <label for="summary">📄 <?= t('story_summary') ?> *</label>
                 <textarea 
                     id="summary" 
                     name="summary" 
                     required
                     minlength="10"
                     class="textarea-small"
-                    placeholder="Un résumé accrocheur qui donnera envie de lire votre histoire..."
+                    placeholder="<?= $lang === 'fr' ? 'Un résumé accrocheur qui donnera envie de lire votre histoire...' : 'A captivating summary that will make readers want to read your story...' ?>"
                 ><?= htmlspecialchars($summary) ?></textarea>
-                <p class="help-text">Résumé accrocheur de votre histoire (minimum 10 caractères)</p>
+                <p class="help-text"><?= $lang === 'fr' ? 'Résumé accrocheur de votre histoire (minimum 10 caractères)' : 'Captivating summary of your story (minimum 10 characters)' ?></p>
             </div>
             
             <div class="form-group">
-                <label for="content">Contenu de l'histoire *</label>
+                <label for="content">📖 <?= t('story_content') ?> *</label>
                 <textarea 
                     id="content" 
                     name="content" 
                     required
                     minlength="100"
                     class="textarea-large"
-                    placeholder="Il était une fois..."
+                    placeholder="<?= $lang === 'fr' ? 'Il était une fois...' : 'Once upon a time...' ?>"
                 ><?= htmlspecialchars($content) ?></textarea>
-                <p class="help-text">Le contenu complet de votre histoire (minimum 100 caractères)</p>
+                <p class="help-text"><?= $lang === 'fr' ? 'Le contenu complet de votre histoire (minimum 100 caractères)' : 'Full story content (minimum 100 characters)' ?></p>
             </div>
             
             <div class="checkbox-group">
@@ -347,11 +347,14 @@ include __DIR__ . '/templates/header.php';
                     <?= $is_published ? 'checked' : '' ?>
                 >
                 <label for="is_published">
-                    Publier immédiatement (sinon elle sera enregistrée comme brouillon !)
+                    <strong>📢 <?= $lang === 'fr' ? 'Publier immédiatement' : 'Publish immediately' ?></strong> 
+                    (<?= $lang === 'fr' ? 'sinon elle sera enregistrée comme brouillon' : 'otherwise it will be saved as a draft' ?>)
                 </label>
             </div>
             
-            <button type="submit" class="btn-submit">💾 Enregistrer l'histoire</button>
+            <button type="submit" class="btn-submit">
+                💾 <?= $lang === 'fr' ? 'Enregistrer l\'histoire' : 'Save Story' ?>
+            </button>
         </form>
     </div>
 </div>
