@@ -186,7 +186,7 @@ class EmailService
             return true;
 
         } catch (Exception $e) {
-            error_log("Erreur d'envoi d'email : " . $mail->ErrorInfo);
+            //error_log("Erreur d'envoi d'email : " . $mail->ErrorInfo);
             return false;
         }
     }
